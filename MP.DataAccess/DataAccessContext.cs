@@ -19,7 +19,7 @@ namespace MP.DataAccess
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("OnConfiguring"));
+            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("MoviePass"));
         }
     }
 }

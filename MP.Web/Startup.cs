@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -9,11 +10,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MP.DataAccess;
+using MP.Core.Services;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace MoviePass
 {
     public class Startup
     {
+        public static readonly IEnumerable<Profile> AutoMapperProfiles = new Profile[]
+        {
+            new MP.Web.Dtos.AutoMapperProfile(),
+            new MP.Core.AutoMapperProfile(),
+        };
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -28,7 +37,7 @@ namespace MoviePass
 
             services.AddDbContext<DataAccessContext>(c =>
             {
-                c.UseSqlServer(Configuration.GetConnectionString("MoviePass"));
+                c.UseSqlServer(Configuration.GetConnectionString("MoviePass"), option => option.EnableRetryOnFailure());
             });
 
             services.AddCors(opt =>
@@ -36,6 +45,9 @@ namespace MoviePass
                 opt.AddPolicy("CorsPolicy",
                     policy => { policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000/"); });
             });
+
+            services.AddHttpClient();
+            services.AddTransient<IMoviesService, MoviesService>();
 
             services.AddSwaggerGen(c =>
             {
@@ -48,6 +60,8 @@ namespace MoviePass
             {
                 configuration.RootPath = "ClientApp/build";
             });
+            var autoMapperProfileTypes = AutoMapperProfiles.Select(p => p.GetType()).ToArray();
+            services.AddAutoMapper(autoMapperProfileTypes);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

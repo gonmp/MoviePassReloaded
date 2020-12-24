@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MP.DataAccess.EntityModels
+namespace MP.Core
 {
     public class Movie
     {

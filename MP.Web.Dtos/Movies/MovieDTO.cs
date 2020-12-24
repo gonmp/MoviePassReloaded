@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MP.DataAccess.EntityModels
+namespace MP.Web.Dtos.Movies
 {
-    public class Movie
+    public class MovieDTO
     {
         public int Id { get; set; }
         public string Title { get; set; }
