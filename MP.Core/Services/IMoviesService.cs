@@ -13,6 +13,5 @@ namespace MP.Core.Services
         Task<Movie> SaveAsync(Movie movie);
         Task<Movie> UpdateAsync(Movie movie);
         Task<Movie> DeleteAsync(int id);
-
     }
 }

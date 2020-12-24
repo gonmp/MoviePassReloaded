@@ -55,17 +55,30 @@ namespace MP.Core.Services
                     var result2 = await response2.Content.ReadAsStringAsync();
                     var resultJson2 = JObject.Parse(result2);
                     var duration = (int)resultJson2.SelectToken("runtime");
-                    var movie = new Movie
+                    var resultDatabase = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == id);
+                    if(resultDatabase != null)
                     {
-                        Id = id,
-                        Title = (string)movieJson.SelectToken("title"),
-                        Language = (string)movieJson.SelectToken("original_language"),
-                        Image = (string)movieJson.SelectToken("poster_path"),
-                        Overview = (string)movieJson.SelectToken("overview"),
-                        Duration = duration
-                    };
-                    await _dataContext.Movies.AddAsync(_mapper.Map<DataAccess.EntityModels.Movie>(movie));
-                    movies.Add(movie);
+                        resultDatabase.Duration = duration;
+                        resultDatabase.Image = (string)movieJson.SelectToken("poster_path");
+                        resultDatabase.Language = (string)movieJson.SelectToken("original_language");
+                        resultDatabase.Overview = (string)movieJson.SelectToken("overview");
+                        resultDatabase.Title = (string)movieJson.SelectToken("title");
+                    }
+                    else
+                    {
+                        var movie = new Movie
+                        {
+                            Id = id,
+                            Title = (string)movieJson.SelectToken("title"),
+                            Language = (string)movieJson.SelectToken("original_language"),
+                            Image = (string)movieJson.SelectToken("poster_path"),
+                            Overview = (string)movieJson.SelectToken("overview"),
+                            Duration = duration
+                        };
+                        await _dataContext.Movies.AddAsync(_mapper.Map<DataAccess.EntityModels.Movie>(movie));
+                        movies.Add(movie);
+                    }
+                    
                 }
             }
             await _dataContext.SaveChangesAsync();
