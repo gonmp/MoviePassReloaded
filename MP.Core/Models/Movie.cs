@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MP.Core
+namespace MP.Core.Models
 {
     public class Movie
     {
@@ -12,5 +12,6 @@ namespace MP.Core
         public string Image { get; set; }
         public string Overview { get; set; }
         public int Duration { get; set; }
+        public IList<MoviesGenres> MoviesGenres { get; set; }
     }
 }

@@ -12,5 +12,6 @@ namespace MP.Web.Dtos.Movies
         public string Image { get; set; }
         public string Overview { get; set; }
         public int Duration { get; set; }
+        public List<MoviesGenresDTO> Genres { get; set; }
     }
 }

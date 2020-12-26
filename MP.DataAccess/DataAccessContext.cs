@@ -9,6 +9,8 @@ namespace MP.DataAccess
     {
         private readonly IConfiguration _configuration;
         public DbSet<Movie> Movies { get; set; }
+        public DbSet<Genre> Genres { get; set; }
+        public DbSet<MoviesGenres> MoviesGenres { get; set; }
 
         public DataAccessContext(DbContextOptions<DataAccessContext> options, IConfiguration configuration) : base(options)
         {
@@ -16,6 +18,7 @@ namespace MP.DataAccess
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<MoviesGenres>().HasKey(sc => new { sc.MovieId, sc.GenreId });
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
