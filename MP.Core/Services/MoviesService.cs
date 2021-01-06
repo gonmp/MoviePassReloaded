@@ -144,10 +144,24 @@ namespace MP.Core.Services
 
         public async Task<Movie> UpdateAsync(Movie movie)
         {
-            var result = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == movie.Id);
+            var result = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).SingleOrDefaultAsync(m => m.Id == movie.Id);
             if (result == null)
             {
                 throw new System.ArgumentException("There is no movie with Id = " + movie.Id, "movie.Id");
+            }
+
+            var genresList = new List<DataAccess.EntityModels.Genre>();
+            foreach (var genre in movie.MoviesGenres)
+            {
+                var moviesGenres = new DataAccess.EntityModels.MoviesGenres
+                {
+                    MovieId = movie.Id,
+                    Movie = result,
+                    GenreId = genre.Genre.Id,
+                    Genre = _mapper.Map<DataAccess.EntityModels.Genre>(genre.Genre)
+                };
+
+                mappedMovie.MoviesGenres.Add(moviesGenres);
             }
 
             result.Id = movie.Id;
