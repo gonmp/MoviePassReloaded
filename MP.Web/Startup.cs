@@ -1,8 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,11 +31,13 @@ namespace MoviePass
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews();
+            services.AddControllersWithViews().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
 
             services.AddDbContext<DataAccessContext>(c =>
             {
-                c.UseSqlServer(Configuration.GetConnectionString("MoviePass"), option => option.EnableRetryOnFailure());
+                c.UseSqlServer(Configuration.GetConnectionString("MoviePass"));
             });
 
             services.AddCors(opt =>
@@ -48,6 +48,7 @@ namespace MoviePass
 
             services.AddHttpClient();
             services.AddTransient<IMoviesService, MoviesService>();
+            services.AddTransient<IGenresService, GenresService>();
 
             services.AddSwaggerGen(c =>
             {

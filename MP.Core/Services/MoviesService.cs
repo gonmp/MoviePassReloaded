@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using MP.Core.Models;
 using MP.DataAccess;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -13,12 +15,14 @@ namespace MP.Core.Services
         private IHttpClientFactory _httpClientFactory;
         private readonly DataAccessContext _dataContext;
         private readonly IMapper _mapper;
+        private readonly IGenresService _genresService;
 
-        public MoviesService(DataAccessContext dataContext, IMapper mapper, IHttpClientFactory httpClientFactory)
+        public MoviesService(DataAccessContext dataContext, IMapper mapper, IHttpClientFactory httpClientFactory, IGenresService genresService)
         {
             _httpClientFactory = httpClientFactory;
             _dataContext = dataContext;
             _mapper = mapper;
+            _genresService = genresService;
         }
 
         public async Task<Movie> DeleteAsync(int id)
@@ -32,7 +36,7 @@ namespace MP.Core.Services
 
         public async Task<List<Movie>> GetAllAsync()
         {
-            var moviesList = await _dataContext.Movies.ToListAsync();
+            var moviesList = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).ToListAsync();
 
             return _mapper.Map<List<Movie>>(moviesList);
         }
@@ -54,31 +58,50 @@ namespace MP.Core.Services
                     var response2 = await httpClient.GetAsync($"https://api.themoviedb.org/3/movie/{id}?api_key=fdd94e2a3c2efe450f97426c853e8fcf&language=en-US");
                     var result2 = await response2.Content.ReadAsStringAsync();
                     var resultJson2 = JObject.Parse(result2);
-                    var duration = (int)resultJson2.SelectToken("runtime");
-                    var resultDatabase = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == id);
-                    if(resultDatabase != null)
+                    var durationJson = resultJson2.SelectToken("runtime");
+                    var duration = 0;
+                    if(durationJson.Type != JTokenType.Null)
                     {
-                        resultDatabase.Duration = duration;
-                        resultDatabase.Image = (string)movieJson.SelectToken("poster_path");
-                        resultDatabase.Language = (string)movieJson.SelectToken("original_language");
-                        resultDatabase.Overview = (string)movieJson.SelectToken("overview");
-                        resultDatabase.Title = (string)movieJson.SelectToken("title");
+                        duration = (int)durationJson;
                     }
-                    else
+                    var genresIdsJson = movieJson.SelectToken("genre_ids");
+                    var genresList = new List<DataAccess.EntityModels.Genre>();
+                    foreach (var genreIdJson in genresIdsJson)
                     {
-                        var movie = new Movie
+                        var genreId = (int)genreIdJson;
+                        //var genre = await _genresService.GetAsync(genreId);
+                        var genre = await _dataContext.Genres.Include(g => g.MoviesGenres).ThenInclude(mg => mg.Movie).SingleOrDefaultAsync(g => g.Id == genreId);
+                        genresList.Add(genre);
+                    }
+                    var movie = new Movie
+                    {
+                        Id = id,
+                        Title = (string)movieJson.SelectToken("title"),
+                        Language = (string)movieJson.SelectToken("original_language"),
+                        Image = (string)movieJson.SelectToken("poster_path"),
+                        Overview = (string)movieJson.SelectToken("overview"),
+                        Duration = duration
+                    };
+
+                    var mappedMovie = _mapper.Map<DataAccess.EntityModels.Movie>(movie);
+                    await _dataContext.Movies.AddAsync(mappedMovie);
+
+                    foreach(var genre in genresList)
+                    {
+                        var moviesGenres = new DataAccess.EntityModels.MoviesGenres
                         {
-                            Id = id,
-                            Title = (string)movieJson.SelectToken("title"),
-                            Language = (string)movieJson.SelectToken("original_language"),
-                            Image = (string)movieJson.SelectToken("poster_path"),
-                            Overview = (string)movieJson.SelectToken("overview"),
-                            Duration = duration
+                            MovieId = mappedMovie.Id,
+                            Movie = mappedMovie,
+                            GenreId = genre.Id,
+                            Genre = genre
                         };
-                        await _dataContext.Movies.AddAsync(_mapper.Map<DataAccess.EntityModels.Movie>(movie));
-                        movies.Add(movie);
+
+                        mappedMovie.MoviesGenres.Add(moviesGenres);
                     }
+
                     
+                    movies.Add(_mapper.Map<Movie>(mappedMovie));
+
                 }
             }
             await _dataContext.SaveChangesAsync();
@@ -98,32 +121,63 @@ namespace MP.Core.Services
 
         public async Task<Movie> GetAsync(int id)
         {
-            var movie = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == id);
+            var movie = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).SingleOrDefaultAsync(m => m.Id == id);
 
             return _mapper.Map<Movie>(movie);
         }
 
         public async Task<Movie> SaveAsync(Movie movie)
         {
-            var result = _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == movie.Id);
-
-            if(result != null)
+            var genresList = new List<DataAccess.EntityModels.Genre>();
+            foreach(var genre in movie.MoviesGenres)
             {
-                throw new System.ArgumentException("There is already a movie with Id = " + movie.Id, "movie.Id");
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
+
+                if (genreToAdd == null) return null;
+
+                genresList.Add(genreToAdd);
             }
 
-            await _dataContext.Movies.AddAsync(_mapper.Map<DataAccess.EntityModels.Movie>(movie));
+            var mappedMovie = _mapper.Map<DataAccess.EntityModels.Movie>(movie);
+
+            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
+            {
+                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
+            }).ToList();
+
+            mappedMovie.MoviesGenres = mappedMovieGenre;
+
+            await _dataContext.Movies.AddAsync(mappedMovie);
+            await _dataContext.SaveChangesAsync();
 
             return movie;
         }
 
         public async Task<Movie> UpdateAsync(Movie movie)
         {
-            var result = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == movie.Id);
+            var result = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).SingleOrDefaultAsync(m => m.Id == movie.Id);
             if (result == null)
             {
                 throw new System.ArgumentException("There is no movie with Id = " + movie.Id, "movie.Id");
             }
+
+            var genresList = new List<DataAccess.EntityModels.Genre>();
+            foreach (var genre in movie.MoviesGenres)
+            {
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
+
+                if(genreToAdd == null)
+                {
+                    return null;
+                }
+
+                genresList.Add(genreToAdd);
+            }
+
+            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
+            {
+                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
+            }).ToList();
 
             result.Id = movie.Id;
             result.Duration = movie.Duration;
@@ -131,6 +185,7 @@ namespace MP.Core.Services
             result.Language = movie.Language;
             result.Overview = movie.Overview;
             result.Title = movie.Title;
+            result.MoviesGenres = mappedMovieGenre;
 
             await _dataContext.SaveChangesAsync();
 

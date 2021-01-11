@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using MP.Core;
+using MP.Core.Models;
 using MP.Core.Services;
 using MP.Web.Dtos.Movies;
 using System;
