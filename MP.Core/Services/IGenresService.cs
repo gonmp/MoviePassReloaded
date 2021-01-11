@@ -11,8 +11,8 @@ namespace MP.Core.Services
         Task<List<Genre>> GetAllFromApiAsync();
         Task<List<Genre>> GetAllAsync();
         Task<Genre> GetAsync(int id);
-        Task<Genre> SaveAsync(Genre movie);
-        Task<Genre> UpdateAsync(Genre movie);
+        Task<Genre> SaveAsync(Genre genre);
+        Task<Genre> UpdateAsync(Genre genre);
         Task<Genre> DeleteAsync(int id);
     }
 }

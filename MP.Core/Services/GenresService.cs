@@ -24,14 +24,23 @@ namespace MP.Core.Services
             _mapper = mapper;
         }
 
-        public Task<Genre> DeleteAsync(int id)
+        public async Task<Genre> DeleteAsync(int id)
         {
-            throw new NotImplementedException();
+            var genreToDelete = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == id);
+
+            if (genreToDelete == null) return null;
+
+            _dataContext.Remove(genreToDelete);
+            await _dataContext.SaveChangesAsync();
+
+            return _mapper.Map<Genre>(genreToDelete);
         }
 
-        public Task<List<Genre>> GetAllAsync()
+        public async Task<List<Genre>> GetAllAsync()
         {
-            throw new NotImplementedException();
+            var genreList = await _dataContext.Genres.ToListAsync();
+
+            return _mapper.Map<List<Genre>>(genreList);
         }
 
         public async Task<List<Genre>> GetAllFromApiAsync()
@@ -75,14 +84,30 @@ namespace MP.Core.Services
             return _mapper.Map<Genre>(genre);
         }
 
-        public Task<Genre> SaveAsync(Genre movie)
+        public async Task<Genre> SaveAsync(Genre genre)
         {
-            throw new NotImplementedException();
+            var mappedGenre = _mapper.Map<DataAccess.EntityModels.Genre>(genre);
+
+            await _dataContext.Genres.AddAsync(mappedGenre);
+            await _dataContext.SaveChangesAsync();
+
+            return genre;
         }
 
-        public Task<Genre> UpdateAsync(Genre movie)
+        public async Task<Genre> UpdateAsync(Genre genre)
         {
-            throw new NotImplementedException();
+            var result = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Id);
+            if (result == null)
+            {
+                throw new System.ArgumentException("There is no genre with Id = " + genre.Id, "genre.Id");
+            }
+
+            result.Id = genre.Id;
+            result.Name = genre.Name;
+
+            await _dataContext.SaveChangesAsync();
+
+            return _mapper.Map<Genre>(result);
         }
     }
 }

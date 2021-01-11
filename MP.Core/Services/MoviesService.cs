@@ -128,14 +128,25 @@ namespace MP.Core.Services
 
         public async Task<Movie> SaveAsync(Movie movie)
         {
-            var result = await _dataContext.Movies.SingleOrDefaultAsync(m => m.Id == movie.Id);
-
-            if(result != null)
+            var genresList = new List<DataAccess.EntityModels.Genre>();
+            foreach(var genre in movie.MoviesGenres)
             {
-                throw new System.ArgumentException("There is already a movie with Id = " + movie.Id, "movie.Id");
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
+
+                if (genreToAdd == null) return null;
+
+                genresList.Add(genreToAdd);
             }
 
             var mappedMovie = _mapper.Map<DataAccess.EntityModels.Movie>(movie);
+
+            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
+            {
+                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
+            }).ToList();
+
+            mappedMovie.MoviesGenres = mappedMovieGenre;
+
             await _dataContext.Movies.AddAsync(mappedMovie);
             await _dataContext.SaveChangesAsync();
 
@@ -153,16 +164,20 @@ namespace MP.Core.Services
             var genresList = new List<DataAccess.EntityModels.Genre>();
             foreach (var genre in movie.MoviesGenres)
             {
-                var moviesGenres = new DataAccess.EntityModels.MoviesGenres
-                {
-                    MovieId = movie.Id,
-                    Movie = result,
-                    GenreId = genre.Genre.Id,
-                    Genre = _mapper.Map<DataAccess.EntityModels.Genre>(genre.Genre)
-                };
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
 
-                mappedMovie.MoviesGenres.Add(moviesGenres);
+                if(genreToAdd == null)
+                {
+                    return null;
+                }
+
+                genresList.Add(genreToAdd);
             }
+
+            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
+            {
+                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
+            }).ToList();
 
             result.Id = movie.Id;
             result.Duration = movie.Duration;
@@ -170,6 +185,7 @@ namespace MP.Core.Services
             result.Language = movie.Language;
             result.Overview = movie.Overview;
             result.Title = movie.Title;
+            result.MoviesGenres = mappedMovieGenre;
 
             await _dataContext.SaveChangesAsync();
 
