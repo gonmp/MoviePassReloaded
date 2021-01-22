@@ -11,6 +11,9 @@ namespace MP.DataAccess
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Genre> Genres { get; set; }
         public DbSet<MoviesGenres> MoviesGenres { get; set; }
+        public DbSet<Profile> Profiles { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRol> UsersRols { get; set; }
 
         public DataAccessContext(DbContextOptions<DataAccessContext> options, IConfiguration configuration) : base(options)
         {
