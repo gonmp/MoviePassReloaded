@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using MP.Core;
 using MP.Core.Models;
+using MP.Web.Dtos.Cinemas;
 using MP.Web.Dtos.Movies;
+using MP.Web.Dtos.Rooms;
+using MP.Web.Dtos.Shows;
 using MP.Web.Dtos.Users;
 using System;
 using System.Collections.Generic;
@@ -27,6 +30,12 @@ namespace MP.Web.Dtos
                 .ReverseMap();
             CreateMap<Profile, ProfileDTO>();
             CreateMap<ProfileUpsertDTO, Profile>();
+            CreateMap<Cinema, CinemaDTO>();
+            CreateMap<CinemaUpsertDTO, Cinema>();
+            CreateMap<Room, RoomDTO>();
+            CreateMap<RoomUpsertDTO, Room>();
+            CreateMap<Show, ShowDTO>();
+            CreateMap<ShowUpsertDTO, Show>();
         }
     }
 }
