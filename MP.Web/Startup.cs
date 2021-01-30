@@ -17,6 +17,7 @@ using System.Text;
 using System.Reflection;
 using System.IO;
 using System;
+using MP.Core.Interfaces;
 
 namespace MoviePass
 {
@@ -90,6 +91,9 @@ namespace MoviePass
             services.AddTransient<IGenresService, GenresService>();
             services.AddTransient<IUsersService, UsersService>();
             services.AddTransient<IProfilesService, ProfilesService>();
+            services.AddTransient<ICinemasService, CinemasService>();
+            services.AddTransient<IRoomsService, RoomsService>();
+            services.AddTransient<IShowsService, ShowsService>();
 
             services.AddSwaggerGen(c =>
             {

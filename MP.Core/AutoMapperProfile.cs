@@ -23,6 +23,12 @@ namespace MP.Core
                 .ReverseMap();
             CreateMap<DataAccess.EntityModels.Profile, Profile>()
                 .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Cinema, Cinema>()
+                .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Room, Room>()
+                .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Show, Show>()
+                .ReverseMap();
         }
     }
 }
