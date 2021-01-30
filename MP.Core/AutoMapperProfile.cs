@@ -3,10 +3,11 @@ using MP.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Profile = MP.Core.Models.Profile;
 
 namespace MP.Core
 {
-    public class AutoMapperProfile : Profile
+    public class AutoMapperProfile : AutoMapper.Profile
     {
         public AutoMapperProfile()
         {
@@ -16,7 +17,12 @@ namespace MP.Core
                .ReverseMap();
             CreateMap<DataAccess.EntityModels.MoviesGenres, MoviesGenres>()
                .ReverseMap();
-
+            CreateMap<DataAccess.EntityModels.User, User>()
+                .ReverseMap();
+            CreateMap<DataAccess.EntityModels.UserRol, UserRol>()
+                .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Profile, Profile>()
+                .ReverseMap();
         }
     }
 }
