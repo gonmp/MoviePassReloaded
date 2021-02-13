@@ -12,5 +12,6 @@ namespace MP.DataAccess.EntityModels
         public Movie Movie { get; set; }
         public int RoomId { get; set; }
         public Room Room { get; set; }
+        public List<Ticket> Tickets { get; set; }
     }
 }

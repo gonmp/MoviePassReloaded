@@ -3,8 +3,10 @@ using MP.Core;
 using MP.Core.Models;
 using MP.Web.Dtos.Cinemas;
 using MP.Web.Dtos.Movies;
+using MP.Web.Dtos.Purchases;
 using MP.Web.Dtos.Rooms;
 using MP.Web.Dtos.Shows;
+using MP.Web.Dtos.Tickets;
 using MP.Web.Dtos.Users;
 using System;
 using System.Collections.Generic;
@@ -36,6 +38,10 @@ namespace MP.Web.Dtos
             CreateMap<RoomUpsertDTO, Room>();
             CreateMap<Show, ShowDTO>();
             CreateMap<ShowUpsertDTO, Show>();
+            CreateMap<Purchase, PurchaseDTO>();
+            CreateMap<Ticket, TicketDTO>();
+            CreateMap<TicketUpsertDTO, Ticket>();
+            
         }
     }
 }

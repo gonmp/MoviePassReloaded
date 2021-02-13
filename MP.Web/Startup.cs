@@ -94,6 +94,8 @@ namespace MoviePass
             services.AddTransient<ICinemasService, CinemasService>();
             services.AddTransient<IRoomsService, RoomsService>();
             services.AddTransient<IShowsService, ShowsService>();
+            services.AddTransient<ITicketsService, TicketsService>();
+            services.AddTransient<IPurchasesService, PurchasesService>();
 
             services.AddSwaggerGen(c =>
             {

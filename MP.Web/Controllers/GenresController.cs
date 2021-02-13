@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MP.Core.Models;
 using MP.Core.Services;
@@ -23,6 +25,7 @@ namespace MP.Web.Controllers
             _genresService = genresService;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllFromApiAsync()
         {
@@ -56,6 +59,7 @@ namespace MP.Web.Controllers
             return Ok(_mapper.Map<GenreDTO>(genre));
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> SaveAsync(GenreDTO genreDto)
         {
@@ -64,6 +68,7 @@ namespace MP.Web.Controllers
             return Ok(_mapper.Map<GenreDTO>(genre));
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(GenreUpsertDTO genreDto, int id)
         {
@@ -81,6 +86,7 @@ namespace MP.Web.Controllers
             return Ok(updatedGenre);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
