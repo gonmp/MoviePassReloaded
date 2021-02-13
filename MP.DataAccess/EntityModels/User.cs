@@ -11,5 +11,6 @@ namespace MP.DataAccess.EntityModels
         public string Password { get; set; }
         public int UserRolId { get; set; }
         public UserRol UserRol { get; set; }
+        public List<Purchase> Purchases { get; set; }
     }
 }

@@ -29,6 +29,10 @@ namespace MP.Core
                 .ReverseMap();
             CreateMap<DataAccess.EntityModels.Show, Show>()
                 .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Purchase, Purchase>()
+                .ReverseMap();
+            CreateMap<DataAccess.EntityModels.Ticket, Ticket>()
+                .ReverseMap();
         }
     }
 }
