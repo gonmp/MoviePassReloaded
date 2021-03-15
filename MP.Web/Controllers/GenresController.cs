@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace MP.Web.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/genres")]
     public class GenresController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -26,7 +26,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpGet]
+        [HttpGet("~/api/themoviesdb/genres")]
         public async Task<IActionResult> GetAllFromApiAsync()
         {
             var genres = await _genresService.GetAllFromApiAsync();

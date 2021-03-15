@@ -27,7 +27,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpGet("~/api/admin/purchases")]
+        [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
             var purchases = await _purchasesService.GetAllAsync();
@@ -38,7 +38,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpGet("~/api/admin/purchases/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
             var purchase = await _purchasesService.GetAsync(id);
@@ -52,7 +52,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("~/api/user/purchases")]
+        [HttpGet("current_user")]
         public async Task<IActionResult> GetAsync()
         {
             var purchase = await _purchasesService.GetAllAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
@@ -66,7 +66,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("~/api/user/purchases")]
+        [HttpPost("current_user")]
         public async Task<IActionResult> SaveAsync(PurchaseUpsertDTO purchaseDto)
         {
             var purchase = await _purchasesService.SaveAsync(purchaseDto.NumberOfTickets, Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), purchaseDto.ShowId, purchaseDto.CardNumber, purchaseDto.ExpMonth, purchaseDto.ExpYear, purchaseDto.Cvc);
@@ -75,7 +75,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpPut("~/api/admin/purchases/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(PurchaseUpsertDTO purchaseDto, int id)
         {
             var purchase = await _purchasesService.GetAsync(id);
@@ -93,7 +93,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpDelete("~/api/admin/purchases/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
             var purchase = await _purchasesService.GetAsync(id);

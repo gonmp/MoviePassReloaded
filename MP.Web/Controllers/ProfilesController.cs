@@ -14,7 +14,7 @@ using Profile = MP.Core.Models.Profile;
 namespace MP.Web.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/profiles")]
     public class ProfilesController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -29,7 +29,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
-        [HttpGet]
+        [HttpGet("{id}")]
         public async Task<IActionResult> AdminGet(int id)
         {
             var profile = await _profilesService.GetAsync(id);
@@ -43,7 +43,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet]
+        [HttpGet("current_user")]
         public async Task<IActionResult> Get()
         {
             var profile = await _profilesService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
@@ -66,7 +66,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost]
+        [HttpPost("current_user")]
         public async Task<IActionResult> SaveAsync(ProfileUpsertDTO profileDto)
         {
             var profile = await _profilesService.SaveAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), _mapper.Map<Profile>(profileDto));

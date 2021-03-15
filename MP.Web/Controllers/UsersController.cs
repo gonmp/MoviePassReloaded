@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace MP.Web.Controllers
 {
     [ApiController]
-    [Route("api/[controller]/[action]")]
+    [Route("api/users")]
     public class UsersController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -26,7 +26,7 @@ namespace MP.Web.Controllers
             _usersService = usersService;
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(UserUpsertDTO userDto)
         {
             var token = await _usersService.Login(_mapper.Map<User>(userDto));
@@ -39,7 +39,7 @@ namespace MP.Web.Controllers
             return Ok(token);
         }
 
-        [HttpPost]
+        [HttpPost("signup")]
         public async Task<IActionResult> SignUp(UserUpsertDTO userDto)
         {
             var newUser = await _usersService.SignUp(_mapper.Map<User>(userDto));
@@ -55,7 +55,7 @@ namespace MP.Web.Controllers
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet]
+        [HttpGet("current_user")]
         public async Task<IActionResult> Get()
         {
             var user = await _usersService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));

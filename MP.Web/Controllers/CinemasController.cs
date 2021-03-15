@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MP.Core.Interfaces;
 using MP.Core.Models;
@@ -46,6 +48,7 @@ namespace MP.Web.Controllers
             return Ok(_mapper.Map<CinemaDTO>(cinema));
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> SaveAsync(CinemaUpsertDTO cinemaDto)
         {
@@ -54,6 +57,7 @@ namespace MP.Web.Controllers
             return Ok(_mapper.Map<CinemaDTO>(cinema));
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(CinemaUpsertDTO cinemaDto, int id)
         {
@@ -71,6 +75,7 @@ namespace MP.Web.Controllers
             return Ok(updatedCinema);
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
