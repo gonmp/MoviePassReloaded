@@ -1,4 +1,5 @@
 ﻿using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,11 +9,11 @@ namespace MP.Core.Interfaces
 {
     public interface IPurchasesService
     {
-        Task<List<Purchase>> GetAllAsync();
-        Task<List<Purchase>> GetAllAsync(int userId);
-        Task<Purchase> GetAsync(int id);
-        Task<Purchase> SaveAsync(int numberOfTickets, int userId, int showId, string cardNumber, int expMonth, int expYear, string cvc);
-        Task<Purchase> UpdateAsync(Purchase purchase);
-        Task<Purchase> DeleteAsync(int id);
+        Task<ServiceResponse<List<Purchase>>> GetAllAsync();
+        Task<ServiceResponse<List<Purchase>>> GetAllAsync(int userId);
+        Task<ServiceResponse<Purchase>> GetAsync(int id);
+        Task<ServiceResponse<Purchase>> SaveAsync(int numberOfTickets, int userId, int showId, string cardNumber, int expMonth, int expYear, string cvc);
+        Task<ServiceResponse<Purchase>> UpdateAsync(Purchase purchase);
+        Task<ServiceResponse<Purchase>> DeleteAsync(int id);
     }
 }

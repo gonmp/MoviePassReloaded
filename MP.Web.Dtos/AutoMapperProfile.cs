@@ -19,28 +19,28 @@ namespace MP.Web.Dtos
     {
         public AutoMapperProfile()
         {
-            CreateMap<MoviesGenres, MoviesGenresDTO>()
+            CreateMap<MoviesGenres, MoviesGenresDto>()
                 .ReverseMap();
-            CreateMap<Genre, GenreDTO>()
+            CreateMap<Genre, GenreDto>()
                 .ReverseMap();
-            CreateMap<Movie, MovieDTO>()
+            CreateMap<Movie, MovieDto>()
                 .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.MoviesGenres))
                 .ReverseMap();
-            CreateMap<User, UserDTO>();
-            CreateMap<UserUpsertDTO, User>();
-            CreateMap<UserRol, UserRolDTO>()
+            CreateMap<User, UserDto>();
+            CreateMap<UserUpsertDto, User>();
+            CreateMap<UserRol, UserRolDto>()
                 .ReverseMap();
-            CreateMap<Profile, ProfileDTO>();
-            CreateMap<ProfileUpsertDTO, Profile>();
-            CreateMap<Cinema, CinemaDTO>();
-            CreateMap<CinemaUpsertDTO, Cinema>();
-            CreateMap<Room, RoomDTO>();
-            CreateMap<RoomUpsertDTO, Room>();
-            CreateMap<Show, ShowDTO>();
-            CreateMap<ShowUpsertDTO, Show>();
-            CreateMap<Purchase, PurchaseDTO>();
-            CreateMap<Ticket, TicketDTO>();
-            CreateMap<TicketUpsertDTO, Ticket>();
+            CreateMap<Profile, ProfileDto>();
+            CreateMap<ProfileUpsertDto, Profile>();
+            CreateMap<Cinema, CinemaDto>();
+            CreateMap<CinemaUpsertDto, Cinema>();
+            CreateMap<Room, RoomDto>();
+            CreateMap<RoomUpsertDto, Room>();
+            CreateMap<Show, ShowDto>();
+            CreateMap<ShowUpsertDto, Show>();
+            CreateMap<Purchase, PurchaseDto>();
+            CreateMap<Ticket, TicketDto>();
+            CreateMap<TicketUpsertDto, Ticket>();
             
         }
     }

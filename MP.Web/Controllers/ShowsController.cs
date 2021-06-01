@@ -28,9 +28,11 @@ namespace MP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var shows = await _showsService.GetAllAsync();
+            var showsResponse = await _showsService.GetAllAsync();
 
-            var showsDto = _mapper.Map<List<ShowDTO>>(shows);
+            var shows = showsResponse.Content;
+
+            var showsDto = _mapper.Map<List<ShowDto>>(shows);
 
             return Ok(showsDto);
         }
@@ -38,57 +40,81 @@ namespace MP.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var show = await _showsService.GetAsync(id);
+            var showResponse = await _showsService.GetAsync(id);
 
-            if (show == null)
-            {
-                return NotFound();
-            }
+            if (!showResponse.Success)
+                return NotFound(showResponse.Error);
 
-            return Ok(_mapper.Map<ShowDTO>(show));
+            var show = showResponse.Content;
+
+            var showDto = _mapper.Map<ShowDto>(show);
+
+            return Ok(showDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(ShowUpsertDTO showDto)
+        public async Task<IActionResult> SaveAsync(ShowUpsertDto showDto)
         {
-            var show = await _showsService.SaveAsync(_mapper.Map<Show>(showDto));
+            var show = _mapper.Map<Show>(showDto);
 
-            return Ok(_mapper.Map<ShowDTO>(show));
+            var showResponse = await _showsService.SaveAsync(show);
+
+            if (!showResponse.Success)
+                return NotFound(showResponse.Error);
+
+            var savedShow = showResponse.Content;
+
+            var savedShowDto = _mapper.Map<ShowDto>(savedShow);
+
+            return Ok(savedShowDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(ShowUpsertDTO showDto, int id)
+        public async Task<IActionResult> UpdateAsync(ShowUpsertDto showDto, int id)
         {
-            var show = await _showsService.GetAsync(id);
+            var show = _mapper.Map<Show>(showDto);
+            show.Id = id;
 
-            if (show == null)
-            {
-                return NotFound();
-            }
+            var showResponse = await _showsService.UpdateAsync(show);
 
-            _mapper.Map(showDto, show);
+            if (!showResponse.Success)
+                return NotFound(showResponse.Error);
 
-            var updatedShow = _mapper.Map<ShowDTO>(await _showsService.UpdateAsync(show));
+            var updatedShow = showResponse.Content;
 
-            return Ok(updatedShow);
+            var updatedShowDto = _mapper.Map<ShowDto>(updatedShow);
+
+            return Ok(updatedShowDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var show = await _showsService.GetAsync(id);
+            var showResponse = await _showsService.DeleteAsync(id);
 
-            if (show == null)
-            {
-                return NotFound();
-            }
+            if (!showResponse.Success)
+                return NotFound(showResponse.Error);
 
-            var deletedShow = _showsService.DeleteAsync(id);
+            var deletedShow = showResponse.Content;
 
-            return Ok(_mapper.Map<ShowDTO>(deletedShow));
+            var deletedShowDto = _mapper.Map<ShowDto>(deletedShow);
+
+            return Ok(deletedShowDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetShowsListingsAsync()
+        {
+            var showsResponse = await _showsService.GetShowsListingsAsync();
+
+            var shows = showsResponse.Content;
+
+            var showsDto = _mapper.Map<List<ShowDto>>(shows);
+
+            return Ok(showsDto);
         }
     }
 }

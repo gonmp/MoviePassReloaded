@@ -28,9 +28,11 @@ namespace MP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var rooms = await _roomsService.GetAllAsync();
+            var roomsResponse = await _roomsService.GetAllAsync();
 
-            var roomsDto = _mapper.Map<List<RoomDTO>>(rooms);
+            var rooms = roomsResponse.Content;
+
+            var roomsDto = _mapper.Map<List<RoomDto>>(rooms);
 
             return Ok(roomsDto);
         }
@@ -38,57 +40,69 @@ namespace MP.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var room = await _roomsService.GetAsync(id);
+            var roomResponse = await _roomsService.GetAsync(id);
 
-            if (room == null)
-            {
-                return NotFound();
-            }
+            if (!roomResponse.Success)
+                return NotFound(roomResponse.Error);
 
-            return Ok(_mapper.Map<RoomDTO>(room));
+            var room = roomResponse.Content;
+
+            var roomDto = _mapper.Map<RoomDto>(room);
+
+            return Ok(roomDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(RoomUpsertDTO roomDto)
+        public async Task<IActionResult> SaveAsync(RoomUpsertDto roomDto)
         {
-            var room = await _roomsService.SaveAsync(_mapper.Map<Room>(roomDto));
+            var room = _mapper.Map<Room>(roomDto);
 
-            return Ok(_mapper.Map<RoomDTO>(room));
+            var roomResponse = await _roomsService.SaveAsync(room);
+
+            if (!roomResponse.Success)
+                return NotFound(roomResponse.Error);
+
+            var savedRoom = roomResponse.Content;
+
+            var savedRoomDto = _mapper.Map<RoomDto>(savedRoom);
+
+            return Ok(savedRoomDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(RoomUpsertDTO roomDto, int id)
+        public async Task<IActionResult> UpdateAsync(RoomUpsertDto roomDto, int id)
         {
-            var room = await _roomsService.GetAsync(id);
+            var room = _mapper.Map<Room>(roomDto);
+            room.Id = id;
 
-            if (room == null)
-            {
-                return NotFound();
-            }
+            var roomResponse = await _roomsService.UpdateAsync(room);
 
-            _mapper.Map(roomDto, room);
+            if (!roomResponse.Success)
+                return NotFound(roomResponse.Error);
 
-            var updatedCinema = _mapper.Map<RoomDTO>(await _roomsService.UpdateAsync(room));
+            var updatedRoom = roomResponse.Content;
 
-            return Ok(updatedCinema);
+            var updatedRoomDto = _mapper.Map<RoomDto>(updatedRoom);
+
+            return Ok(updatedRoomDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var room = await _roomsService.GetAsync(id);
+            var roomResponse = await _roomsService.DeleteAsync(id);
 
-            if (room == null)
-            {
-                return NotFound();
-            }
+            if (!roomResponse.Success)
+                return NotFound(roomResponse.Error);
 
-            var deletedRoom = _roomsService.DeleteAsync(id);
+            var deletedRoom = roomResponse.Content;
 
-            return Ok(_mapper.Map<RoomDTO>(deletedRoom));
+            var deletedRoomDto = _mapper.Map<RoomDto>(deletedRoom);
+
+            return Ok(deletedRoomDto);
         }
     }
 }

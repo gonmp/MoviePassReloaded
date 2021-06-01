@@ -6,11 +6,11 @@ using System.Text;
 
 namespace MP.Web.Dtos.Shows
 {
-    public class ShowDTO
+    public class ShowDto
     {
         public int Id { get; set; }
         public DateTime DateTime { get; set; }
-        public MovieDTO Movie { get; set; }
-        public RoomDTO Room { get; set; }
+        public MovieDto Movie { get; set; }
+        public RoomDto Room { get; set; }
     }
 }

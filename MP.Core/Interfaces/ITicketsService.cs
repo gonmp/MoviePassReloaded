@@ -1,4 +1,5 @@
 ﻿using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,10 +9,10 @@ namespace MP.Core.Interfaces
 {
     public interface ITicketsService
     {
-        Task<List<Ticket>> GetAllAsync();
-        Task<Ticket> GetAsync(int id);
-        Task<Ticket> SaveAsync(Ticket ticket);
-        Task<Ticket> UpdateAsync(Ticket ticket);
-        Task<Ticket> DeleteAsync(int id);
+        Task<ServiceResponse<List<Ticket>>> GetAllAsync();
+        Task<ServiceResponse<Ticket>> GetAsync(int id);
+        Task<ServiceResponse<Ticket>> SaveAsync(Ticket ticket);
+        Task<ServiceResponse<Ticket>> UpdateAsync(Ticket ticket);
+        Task<ServiceResponse<Ticket>> DeleteAsync(int id);
     }
 }

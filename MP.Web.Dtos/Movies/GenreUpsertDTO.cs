@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Movies
 {
-    public class GenreUpsertDTO
+    public class GenreUpsertDto
     {
         public string Name { get; set; }
     }

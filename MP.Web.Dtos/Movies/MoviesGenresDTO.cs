@@ -4,9 +4,9 @@ using System.Text;
 
 namespace MP.Web.Dtos.Movies
 {
-    public class MoviesGenresDTO
+    public class MoviesGenresDto
     {
-        public MovieDTO Movie { get; set; }
-        public GenreDTO Genre { get; set; }
+        public MovieDto Movie { get; set; }
+        public GenreDto Genre { get; set; }
     }
 }

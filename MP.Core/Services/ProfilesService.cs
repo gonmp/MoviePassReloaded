@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using MP.Core.Models;
+using MP.Core.Response;
 using MP.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -21,33 +22,28 @@ namespace MP.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<Profile> DeleteAsync(int id)
-        {
-            var profileToDelete = await _dataContext.Genres.SingleOrDefaultAsync(p => p.Id == id);
-
-            if (profileToDelete == null) return null;
-
-            _dataContext.Remove(profileToDelete);
-            await _dataContext.SaveChangesAsync();
-
-            return _mapper.Map<Profile>(profileToDelete);
-        }
-
-        public async Task<List<Profile>> GetAllAsync()
+        public async Task<ServiceResponse<List<Profile>>> GetAllAsync()
         {
             var profilesList = await _dataContext.Profiles.ToListAsync();
 
-            return _mapper.Map<List<Profile>>(profilesList);
+            var mappedProfilesList = _mapper.Map<List<Profile>>(profilesList);
+
+            return new ServiceResponse<List<Profile>>(mappedProfilesList);
         }
 
-        public async Task<Profile> GetAsync(int userId)
+        public async Task<ServiceResponse<Profile>> GetAsync(int userId)
         {
             var profile = await _dataContext.Profiles.Include(p => p.User).ThenInclude(u => u.UserRol).SingleOrDefaultAsync(p => p.UserId == userId);
 
-            return _mapper.Map<Profile>(profile);
+            if (profile == null)
+                return new ServiceResponse<Profile>(new Error(ErrorCodes.ProfileNotExists, ErrorMessages.ProfileNotExists(userId)));
+
+            var mappedProfile = _mapper.Map<Profile>(profile);
+
+            return new ServiceResponse<Profile>(mappedProfile);
         }
 
-        public async Task<Profile> SaveAsync(int userId, Profile profile)
+        public async Task<ServiceResponse<Profile>> SaveAsync(int userId, Profile profile)
         {
             var user = await _dataContext.Users.SingleOrDefaultAsync(u => u.Id == userId);
             var mappedProfile = _mapper.Map<DataAccess.EntityModels.Profile>(profile);
@@ -57,16 +53,17 @@ namespace MP.Core.Services
             await _dataContext.Profiles.AddAsync(mappedProfile);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Profile>(mappedProfile); ;
+            var savedProfile = _mapper.Map<Profile>(mappedProfile);
+
+            return new ServiceResponse<Profile>(savedProfile);
         }
 
-        public async Task<Profile> UpdateAsync(Profile profile)
+        public async Task<ServiceResponse<Profile>> UpdateAsync(Profile profile)
         {
             var result = await _dataContext.Profiles.Include(p => p.User).SingleOrDefaultAsync(p => p.Id == profile.Id);
+
             if (result == null)
-            {
-                throw new System.ArgumentException("There is no genre with Id = " + profile.Id, "profile.Id");
-            }
+                return new ServiceResponse<Profile>(new Error(ErrorCodes.ProfileNotExists, ErrorMessages.ProfileNotExists(profile.Id)));
 
             result.Name = profile.Name;
             result.LastName = profile.LastName;
@@ -74,7 +71,24 @@ namespace MP.Core.Services
 
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Profile>(result);
+            var updatedProfile = _mapper.Map<Profile>(result);
+
+            return new ServiceResponse<Profile>(updatedProfile);
+        }
+
+        public async Task<ServiceResponse<Profile>> DeleteAsync(int id)
+        {
+            var profileToDelete = await _dataContext.Genres.SingleOrDefaultAsync(p => p.Id == id);
+
+            if (profileToDelete == null)
+                return new ServiceResponse<Profile>(new Error(ErrorCodes.ProfileNotExists, ErrorMessages.ProfileNotExists(id)));
+
+            _dataContext.Remove(profileToDelete);
+            await _dataContext.SaveChangesAsync();
+
+            var deletedProfile = _mapper.Map<Profile>(profileToDelete);
+
+            return new ServiceResponse<Profile>(deletedProfile);
         }
     }
 }

@@ -18,6 +18,7 @@ using System.Reflection;
 using System.IO;
 using System;
 using MP.Core.Interfaces;
+using MP.Core.Configuration;
 
 namespace MoviePass
 {
@@ -42,11 +43,14 @@ namespace MoviePass
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
 
-            //JWT Authemtication
-            var key = Encoding.ASCII.GetBytes("Nosequeponerasiquepongoesto");
+            //JWT Authentication
+            var secretKeyOption = new JwtAuthenticationOptions();
+            Configuration.GetSection(JwtAuthenticationOptions.JwtAuthentication).Bind(secretKeyOption);
+            var key = Encoding.ASCII.GetBytes(secretKeyOption.SecretKey);
 
             services.AddAuthentication(opt => {
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
             {
@@ -60,20 +64,7 @@ namespace MoviePass
                 };
             });
 
-            /*services.AddAuthentication(au => {
-                au.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                au.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(jwt => {
-                jwt.RequireHttpsMetadata = false;
-                jwt.SaveToken = true;
-                jwt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
-            });*/
+            services.AddAuthorization();
 
             services.AddDbContext<DataAccessContext>(c =>
             {
@@ -85,6 +76,8 @@ namespace MoviePass
                 opt.AddPolicy("CorsPolicy",
                     policy => { policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:3000/"); });
             });
+
+            services.Configure<TheMovieDbOptions>(Configuration.GetSection(TheMovieDbOptions.TheMovieDb));
 
             services.AddHttpClient();
             services.AddTransient<IMoviesService, MoviesService>();
@@ -162,8 +155,8 @@ namespace MoviePass
             
             app.UseRouting();
 
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

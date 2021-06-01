@@ -1,4 +1,5 @@
 ﻿using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,10 +9,10 @@ namespace MP.Core.Interfaces
 {
     public interface ICinemasService
     {
-        Task<List<Cinema>> GetAllAsync();
-        Task<Cinema> GetAsync(int id);
-        Task<Cinema> SaveAsync(Cinema cinema);
-        Task<Cinema> UpdateAsync(Cinema cinema);
-        Task<Cinema> DeleteAsync(int id);
+        Task<ServiceResponse<List<Cinema>>> GetAllAsync();
+        Task<ServiceResponse<Cinema>> GetAsync(int id);
+        Task<ServiceResponse<Cinema>> SaveAsync(Cinema cinema);
+        Task<ServiceResponse<Cinema>> UpdateAsync(Cinema cinema);
+        Task<ServiceResponse<Cinema>> DeleteAsync(int id);
     }
 }

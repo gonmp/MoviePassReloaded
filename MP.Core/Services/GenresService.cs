@@ -1,6 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using MP.Core.Configuration;
 using MP.Core.Models;
+using MP.Core.Resources;
+using MP.Core.Response;
 using MP.DataAccess;
 using Newtonsoft.Json.Linq;
 using System;
@@ -13,42 +17,49 @@ namespace MP.Core.Services
 {
     public class GenresService : IGenresService
     {
-        private IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly DataAccessContext _dataContext;
         private readonly IMapper _mapper;
+        private readonly TheMovieDbOptions _theMovieDbOptions;
 
-        public GenresService(DataAccessContext dataContext, IMapper mapper, IHttpClientFactory httpClientFactory)
+        public GenresService(DataAccessContext dataContext, IMapper mapper, IHttpClientFactory httpClientFactory, IOptions<TheMovieDbOptions> theMovieDbOptions)
         {
             _httpClientFactory = httpClientFactory;
             _dataContext = dataContext;
             _mapper = mapper;
+            _theMovieDbOptions = theMovieDbOptions.Value;
         }
 
-        public async Task<Genre> DeleteAsync(int id)
+        public async Task<ServiceResponse<Genre>> DeleteAsync(int id)
         {
             var genreToDelete = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == id);
 
-            if (genreToDelete == null) return null;
+            if (genreToDelete == null)
+                return new ServiceResponse<Genre>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(id)));
 
             _dataContext.Remove(genreToDelete);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Genre>(genreToDelete);
+            var mappedGenre = _mapper.Map<Genre>(genreToDelete);
+
+            return new ServiceResponse<Genre>(mappedGenre);
         }
 
-        public async Task<List<Genre>> GetAllAsync()
+        public async Task<ServiceResponse<List<Genre>>> GetAllAsync()
         {
             var genreList = await _dataContext.Genres.ToListAsync();
 
-            return _mapper.Map<List<Genre>>(genreList);
+            var mappedGenreList = _mapper.Map<List<Genre>>(genreList);
+
+            return new ServiceResponse<List<Genre>>(mappedGenreList);
         }
 
-        public async Task<List<Genre>> GetAllFromApiAsync()
+        public async Task<ServiceResponse<List<Genre>>> GetAllFromApiAsync()
         {
             var httpClient = _httpClientFactory.CreateClient();
             var genres = new List<Genre>();
             
-            var response = await httpClient.GetAsync("https://api.themoviedb.org/3/genre/movie/list?api_key=fdd94e2a3c2efe450f97426c853e8fcf&language=es-ES");
+            var response = await httpClient.GetAsync(TheMovieDbUris.GetGenres(_theMovieDbOptions.ApiKey));
             var result = await response.Content.ReadAsStringAsync();
             var resultJson = JObject.Parse(result);
             var genresJson = resultJson.SelectToken("genres");
@@ -74,40 +85,44 @@ namespace MP.Core.Services
 
             }
             await _dataContext.SaveChangesAsync();
-            return genres;
+            return new ServiceResponse<List<Genre>>(genres);
         }
 
-        public async Task<Genre> GetAsync(int id)
+        public async Task<ServiceResponse<Genre>> GetAsync(int id)
         {
             var genre = await _dataContext.Genres.AsNoTracking().SingleOrDefaultAsync(g => g.Id == id);
 
-            return _mapper.Map<Genre>(genre);
+            var mappedGenre = _mapper.Map<Genre>(genre);
+
+            return new ServiceResponse<Genre>(mappedGenre);
         }
 
-        public async Task<Genre> SaveAsync(Genre genre)
+        public async Task<ServiceResponse<Genre>> SaveAsync(Genre genre)
         {
             var mappedGenre = _mapper.Map<DataAccess.EntityModels.Genre>(genre);
 
             await _dataContext.Genres.AddAsync(mappedGenre);
             await _dataContext.SaveChangesAsync();
 
-            return genre;
+            var savedGenre = _mapper.Map<Genre>(mappedGenre);
+
+            return new ServiceResponse<Genre>(savedGenre);
         }
 
-        public async Task<Genre> UpdateAsync(Genre genre)
+        public async Task<ServiceResponse<Genre>> UpdateAsync(Genre genre)
         {
             var result = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Id);
             if (result == null)
-            {
-                throw new System.ArgumentException("There is no genre with Id = " + genre.Id, "genre.Id");
-            }
+                return new ServiceResponse<Genre>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(genre.Id)));
 
             result.Id = genre.Id;
             result.Name = genre.Name;
 
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Genre>(result);
+            var updatedGenre = _mapper.Map<Genre>(result);
+
+            return new ServiceResponse<Genre>(updatedGenre);
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MP.Core.Interfaces;
 using MP.Core.Models;
+using MP.Core.Response;
 using MP.DataAccess;
 using Stripe;
 using System;
@@ -25,7 +26,7 @@ namespace MP.Core.Services
             _ticketsService = ticketsService;
         }
 
-        public async Task<List<Purchase>> GetAllAsync()
+        public async Task<ServiceResponse<List<Purchase>>> GetAllAsync()
         {
             var purchases = await _dataContext.Purchases
                 .Include(p => p.User)
@@ -40,11 +41,18 @@ namespace MP.Core.Services
                     .ThenInclude(mg => mg.Genre)
                 .ToListAsync();
 
-            return _mapper.Map<List<Purchase>>(purchases);
+            var mappedPurchasesList = _mapper.Map<List<Purchase>>(purchases);
+
+            return new ServiceResponse<List<Purchase>>(mappedPurchasesList);
         }
 
-        public async Task<List<Purchase>> GetAllAsync(int userId)
+        public async Task<ServiceResponse<List<Purchase>>> GetAllAsync(int userId)
         {
+            var user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user == null)
+                return new ServiceResponse<List<Purchase>>(new Error(ErrorCodes.UserNotExists, ErrorMessages.UserNotExists(userId)));
+
             var purchases = await _dataContext.Purchases
                 .Include(p => p.User)
                 .Include(p => p.Tickets)
@@ -59,10 +67,12 @@ namespace MP.Core.Services
                 .Where(p => p.UserId == userId)
                 .ToListAsync();
 
-            return _mapper.Map<List<Purchase>>(purchases);
+            var mappedPurchasesList = _mapper.Map<List<Purchase>>(purchases);
+
+            return new ServiceResponse<List<Purchase>>(mappedPurchasesList);
         }
 
-        public async Task<Purchase> GetAsync(int id)
+        public async Task<ServiceResponse<Purchase>> GetAsync(int id)
         {
             var purchase = await _dataContext.Purchases
                 .Include(p => p.User)
@@ -77,18 +87,22 @@ namespace MP.Core.Services
                     .ThenInclude(mg => mg.Genre)
                 .SingleOrDefaultAsync(p => p.Id == id);
 
-            return _mapper.Map<Purchase>(purchase);
+            if (purchase == null)
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.PurchaseNotExists, ErrorMessages.PurchaseNotExists(id)));
+
+            var mappedPurchase = _mapper.Map<Purchase>(purchase);
+
+            return new ServiceResponse<Purchase>(mappedPurchase);
         }
 
-        public async Task<Purchase> SaveAsync(int numberOfTickets, int userId, int showId, string cardNumber, int expMonth, int expYear, string cvc)
+        public async Task<ServiceResponse<Purchase>> SaveAsync(int numberOfTickets, int userId, int showId, string cardNumber, int expMonth, int expYear, string cvc)
         {
 
             var user = await _dataContext.Users
                 .SingleOrDefaultAsync(u => u.Id == userId);
+
             if (user == null)
-            {
-                throw new System.ArgumentException("There is no user with Id = " + user.Id, "user.Id");
-            }
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.UserNotExists, ErrorMessages.UserNotExists(userId)));
 
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
@@ -99,15 +113,11 @@ namespace MP.Core.Services
                 .SingleOrDefaultAsync(s => s.Id == showId);
 
             if (show == null)
-            {
-                throw new System.ArgumentException("There is no show with Id = " + show.Id, "show.Id");
-            }
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(showId)));
 
             if (!ValidatePayment(cardNumber, expMonth, expYear, cvc))
-            {
-                throw new System.ArgumentException("Invalid payment");
-            }
-            
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.InvalidPayment, ErrorMessages.InvalidPayment));
+
             var mappedPurchase = new DataAccess.EntityModels.Purchase();
             mappedPurchase.NumberOfTickets = numberOfTickets;
             mappedPurchase.PurchaseDate = DateTime.Now;
@@ -139,10 +149,12 @@ namespace MP.Core.Services
             mappedPurchase.Tickets = tickets;
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Purchase>(mappedPurchase);
+            var savedPurchase = _mapper.Map<Purchase>(mappedPurchase);
+
+            return new ServiceResponse<Purchase>(savedPurchase);
         }
 
-        public async Task<Purchase> UpdateAsync(Purchase purchase)
+        public async Task<ServiceResponse<Purchase>> UpdateAsync(Purchase purchase)
         {
             var result = await _dataContext.Purchases
                 .Include(p => p.User)
@@ -158,16 +170,13 @@ namespace MP.Core.Services
                 .SingleOrDefaultAsync(p => p.Id == purchase.Id);
 
             if (result == null)
-            {
-                throw new System.ArgumentException("There is no purchase with Id = " + purchase.Id, "purchase.Id");
-            }
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.PurchaseNotExists, ErrorMessages.PurchaseNotExists(purchase.Id)));
 
             var user = await _dataContext.Users
-                .SingleOrDefaultAsync(u => u.Id == purchase.Id);
+                .SingleOrDefaultAsync(u => u.Id == purchase.UserId);
+
             if (user == null)
-            {
-                throw new System.ArgumentException("There is no user with Id = " + user.Id, "user.Id");
-            }
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.UserNotExists, ErrorMessages.UserNotExists(purchase.UserId)));
 
             var tickets = new List<DataAccess.EntityModels.Ticket>();
 
@@ -184,9 +193,7 @@ namespace MP.Core.Services
                     .SingleOrDefaultAsync(t => t.Id == ticketId.Id);
 
                 if (ticket == null)
-                {
-                    throw new System.ArgumentException("There is no ticket with Id = " + ticketId.Id, "ticket.Id");
-                }
+                    return new ServiceResponse<Purchase>(new Error(ErrorCodes.TicketNotExists, ErrorMessages.TicketNotExists(ticketId.Id)));
 
                 tickets.Add(ticket);
             }
@@ -196,19 +203,24 @@ namespace MP.Core.Services
 
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Purchase>(result);
+            var updatedPurchase = _mapper.Map<Purchase>(result);
+
+            return new ServiceResponse<Purchase>(updatedPurchase);
         }
 
-        public async Task<Purchase> DeleteAsync(int id)
+        public async Task<ServiceResponse<Purchase>> DeleteAsync(int id)
         {
             var purchaseToDelete = await _dataContext.Purchases.SingleOrDefaultAsync(p => p.Id == id);
 
-            if (purchaseToDelete == null) return null;
+            if (purchaseToDelete == null)
+                return new ServiceResponse<Purchase>(new Error(ErrorCodes.PurchaseNotExists, ErrorMessages.PurchaseNotExists(id)));
 
             _dataContext.Remove(purchaseToDelete);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Purchase>(purchaseToDelete);
+            var deletedPurchase = _mapper.Map<Purchase>(purchaseToDelete);
+
+            return new ServiceResponse<Purchase>(deletedPurchase);
         }
 
         private bool ValidatePayment(string cardNumber, int expMonth, int expYear, string cvc)

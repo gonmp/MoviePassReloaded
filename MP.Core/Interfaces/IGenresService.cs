@@ -1,4 +1,5 @@
 ﻿using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,11 +9,11 @@ namespace MP.Core.Services
 {
     public interface IGenresService
     {
-        Task<List<Genre>> GetAllFromApiAsync();
-        Task<List<Genre>> GetAllAsync();
-        Task<Genre> GetAsync(int id);
-        Task<Genre> SaveAsync(Genre genre);
-        Task<Genre> UpdateAsync(Genre genre);
-        Task<Genre> DeleteAsync(int id);
+        Task<ServiceResponse<List<Genre>>> GetAllFromApiAsync();
+        Task<ServiceResponse<List<Genre>>> GetAllAsync();
+        Task<ServiceResponse<Genre>> GetAsync(int id);
+        Task<ServiceResponse<Genre>> SaveAsync(Genre genre);
+        Task<ServiceResponse<Genre>> UpdateAsync(Genre genre);
+        Task<ServiceResponse<Genre>> DeleteAsync(int id);
     }
 }

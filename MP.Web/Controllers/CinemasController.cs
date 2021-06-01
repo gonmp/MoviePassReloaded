@@ -28,9 +28,11 @@ namespace MP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var cinemas = await _cinemasService.GetAllAsync();
+            var cinemasResponse = await _cinemasService.GetAllAsync();
 
-            var cinemasDto = _mapper.Map<List<CinemaDTO>>(cinemas);
+            var cinemas = cinemasResponse.Content;
+
+            var cinemasDto = _mapper.Map<List<CinemaDto>>(cinemas);
 
             return Ok(cinemasDto);
         }
@@ -38,57 +40,66 @@ namespace MP.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var cinema = await _cinemasService.GetAsync(id);
+            var cinemaResponse = await _cinemasService.GetAsync(id);
 
-            if (cinema == null)
-            {
-                return NotFound();
-            }
+            if (!cinemaResponse.Success)
+                return NotFound(cinemaResponse.Error);
 
-            return Ok(_mapper.Map<CinemaDTO>(cinema));
+            var cinema = cinemaResponse.Content;
+
+            var mappedCinema = _mapper.Map<CinemaDto>(cinema);
+
+            return Ok(mappedCinema);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(CinemaUpsertDTO cinemaDto)
+        public async Task<IActionResult> SaveAsync(CinemaUpsertDto cinemaDto)
         {
-            var cinema = await _cinemasService.SaveAsync(_mapper.Map<Cinema>(cinemaDto));
+            var cinema = _mapper.Map<Cinema>(cinemaDto);
 
-            return Ok(_mapper.Map<CinemaDTO>(cinema));
+            var cinemaResponse = await _cinemasService.SaveAsync(cinema);
+
+            var savedCinema = cinemaResponse.Content;
+
+            var savedCinemaDto = _mapper.Map<CinemaDto>(savedCinema);
+
+            return Ok(savedCinemaDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(CinemaUpsertDTO cinemaDto, int id)
+        public async Task<IActionResult> UpdateAsync(CinemaUpsertDto cinemaDto, int id)
         {
-            var cinema = await _cinemasService.GetAsync(id);
+            var cinema = _mapper.Map<Cinema>(cinemaDto);
+            cinema.Id = id;
 
-            if (cinema == null)
-            {
-                return NotFound();
-            }
+            var cinemaResponse = await _cinemasService.UpdateAsync(cinema);
 
-            _mapper.Map(cinemaDto, cinema);
+            if (!cinemaResponse.Success)
+                return NotFound(cinemaResponse.Error);
 
-            var updatedCinema = _mapper.Map<CinemaDTO>(await _cinemasService.UpdateAsync(cinema));
+            var updatedCinema = cinemaResponse.Content;
 
-            return Ok(updatedCinema);
+            var updatedCinemaDto = _mapper.Map<CinemaDto>(updatedCinema);
+
+            return Ok(updatedCinemaDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var cinema = await _cinemasService.GetAsync(id);
+            var cinemaResponse = await _cinemasService.DeleteAsync(id);
 
-            if (cinema == null)
-            {
-                return NotFound();
-            }
+            if (!cinemaResponse.Success)
+                return NotFound(cinemaResponse.Error);
 
-            var deletedCinema = _cinemasService.DeleteAsync(id);
+            var deletedCinema = cinemaResponse.Content;
 
-            return Ok(_mapper.Map<CinemaDTO>(deletedCinema));
+            var deletedCinemaDto = _mapper.Map<CinemaDto>(deletedCinema);
+
+            return Ok(deletedCinemaDto);
         }
     }
 }

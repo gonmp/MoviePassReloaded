@@ -26,86 +26,100 @@ namespace MP.Web.Controllers
             _purchasesService = purchasesService;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var purchases = await _purchasesService.GetAllAsync();
+            var purchasesResponse = await _purchasesService.GetAllAsync();
 
-            var purchasesDto = _mapper.Map<List<PurchaseDTO>>(purchases);
+            var purchases = purchasesResponse.Content;
+
+            var purchasesDto = _mapper.Map<List<PurchaseDto>>(purchases);
 
             return Ok(purchasesDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var purchase = await _purchasesService.GetAsync(id);
+            var purchaseResponse = await _purchasesService.GetAsync(id);
 
-            if (purchase == null)
-            {
-                return NotFound();
-            }
+            if (!purchaseResponse.Success)
+                return NotFound(purchaseResponse.Error);
 
-            return Ok(_mapper.Map<PurchaseDTO>(purchase));
+            var purchase = purchaseResponse.Content;
+
+            var purchaseDto = _mapper.Map<PurchaseDto>(purchase);
+
+            return Ok(purchaseDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize]
         [HttpGet("current_user")]
         public async Task<IActionResult> GetAsync()
         {
-            var purchase = await _purchasesService.GetAllAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
+            var purchasesResponse = await _purchasesService.GetAllAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
 
-            if (purchase == null)
-            {
-                return NotFound();
-            }
+            if (!purchasesResponse.Success)
+                return NotFound(purchasesResponse.Error);
 
-            return Ok(_mapper.Map<List<PurchaseDTO>>(purchase));
+            var purchases = purchasesResponse.Content;
+
+            var purchasesDto = _mapper.Map<List<PurchaseDto>>(purchases);
+
+            return Ok(purchasesDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize]
         [HttpPost("current_user")]
-        public async Task<IActionResult> SaveAsync(PurchaseUpsertDTO purchaseDto)
+        public async Task<IActionResult> SaveAsync(PurchaseUpsertDto purchaseDto)
         {
-            var purchase = await _purchasesService.SaveAsync(purchaseDto.NumberOfTickets, Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), purchaseDto.ShowId, purchaseDto.CardNumber, purchaseDto.ExpMonth, purchaseDto.ExpYear, purchaseDto.Cvc);
+            var purchaseResponse = await _purchasesService.SaveAsync(purchaseDto.NumberOfTickets, Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), purchaseDto.ShowId, purchaseDto.CardNumber, purchaseDto.ExpMonth, purchaseDto.ExpYear, purchaseDto.Cvc);
 
-            return Ok(_mapper.Map<PurchaseDTO>(purchase));
+            if (!purchaseResponse.Success)
+                return NotFound(purchaseResponse.Error);
+
+            var savedPurchase = purchaseResponse.Content;
+
+            var savedPurchaseDto = _mapper.Map<PurchaseDto>(savedPurchase);
+
+            return Ok(savedPurchaseDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(PurchaseUpsertDTO purchaseDto, int id)
+        public async Task<IActionResult> UpdateAsync(PurchaseUpsertDto purchaseDto, int id)
         {
-            var purchase = await _purchasesService.GetAsync(id);
+            var purchase = _mapper.Map<Purchase>(purchaseDto);
+            purchase.Id = id;
 
-            if (purchase == null)
-            {
-                return NotFound();
-            }
+            var purchaseResponse = await _purchasesService.UpdateAsync(purchase);
 
-            _mapper.Map(purchaseDto, purchase);
+            if (!purchaseResponse.Success)
+                return NotFound(purchaseResponse.Error);
 
-            var updatedPurchase = _mapper.Map<PurchaseDTO>(await _purchasesService.UpdateAsync(purchase));
+            var updatedPurchase = purchaseResponse.Content;
 
-            return Ok(updatedPurchase);
+            var updatedPurchaseDto = _mapper.Map<PurchaseDto>(updatedPurchase);
+
+            return Ok(updatedPurchaseDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var purchase = await _purchasesService.GetAsync(id);
+            var purchaseResponse = await _purchasesService.DeleteAsync(id);
 
-            if (purchase == null)
-            {
-                return NotFound();
-            }
+            if (!purchaseResponse.Success)
+                return NotFound(purchaseResponse.Error);
 
-            var deletedPurchase = _purchasesService.DeleteAsync(id);
+            var deletedPurchase = purchaseResponse.Content;
 
-            return Ok(_mapper.Map<PurchaseDTO>(deletedPurchase));
+            var deletedPurchaseDto = _mapper.Map<PurchaseDto>(deletedPurchase);
+
+            return Ok(deletedPurchaseDto);
         }
     }
 }

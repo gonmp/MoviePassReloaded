@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MP.Core.Models;
+using MP.Core.Response;
 using MP.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -23,10 +24,12 @@ namespace MP.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<string> Login(User user)
+        public async Task<ServiceResponse<string>> Login(User user)
         {
             var userDb = await _dataContext.Users.Include(u => u.UserRol).SingleOrDefaultAsync(u => u.Email == user.Email && u.Password == user.Password);
-            if (userDb == null) return null;
+
+            if (userDb == null)
+                return new ServiceResponse<string>(new Error(ErrorCodes.InvalidCredentials, ErrorMessages.InvalidCredentials));
 
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("Nosequeponerasiquepongoesto");
@@ -49,13 +52,15 @@ namespace MP.Core.Services
 
             var tokenString = tokenHandler.WriteToken(token);
 
-            return tokenString;
+            return new ServiceResponse<string>(tokenString);
         }
 
-        public async Task<User> SignUp(User user)
+        public async Task<ServiceResponse<User>> SignUp(User user)
         {
             var userDb = await _dataContext.Users.SingleOrDefaultAsync(u => u.Email == user.Email);
-            if (userDb != null) return null;
+
+            if (userDb != null)
+                return new ServiceResponse<User>(new Error(ErrorCodes.UserAlreadyExists, ErrorMessages.UserAlreadyExists));
 
             user.UserRolId = 2;
 
@@ -63,14 +68,18 @@ namespace MP.Core.Services
             await _dataContext.Users.AddAsync(mappedUser);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<User>(mappedUser);
+            var userFromDb = _mapper.Map<User>(mappedUser);
+
+            return new ServiceResponse<User>(userFromDb);
         }
 
-        public async Task<User> GetAsync(int id)
+        public async Task<ServiceResponse<User>> GetAsync(int id)
         {
             var user = await _dataContext.Users.Include(u => u.UserRol).SingleOrDefaultAsync(u => u.Id == id);
 
-            return _mapper.Map<User>(user);
+            var mappedUser = _mapper.Map<User>(user);
+
+            return new ServiceResponse<User>(mappedUser);
         }
     }
 }

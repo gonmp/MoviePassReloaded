@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Users
 {
-    public class UserRolDTO
+    public class UserRolDto
     {
         public int Id { get; set; }
         public string Description { get; set; }

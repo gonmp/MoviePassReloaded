@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using MP.Core.Interfaces;
 using MP.Core.Models;
+using MP.Core.Response;
 using MP.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,7 +23,7 @@ namespace MP.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<List<Show>> GetAllAsync()
+        public async Task<ServiceResponse<List<Show>>> GetAllAsync()
         {
             var shows = await _dataContext.Shows
                 .Include(s => s.Movie)
@@ -31,10 +33,12 @@ namespace MP.Core.Services
                     .ThenInclude(r => r.Cinema)
                 .ToListAsync();
 
-            return _mapper.Map<List<Show>>(shows);
+            var mappesShowsList = _mapper.Map<List<Show>>(shows);
+
+            return new ServiceResponse<List<Show>>(mappesShowsList);
         }
 
-        public async Task<Show> GetAsync(int id)
+        public async Task<ServiceResponse<Show>> GetAsync(int id)
         {
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
@@ -44,10 +48,15 @@ namespace MP.Core.Services
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(s => s.Id == id);
 
-            return _mapper.Map<Show>(show);
+            if (show == null)
+                return new ServiceResponse<Show>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(id)));
+
+            var mappedShow = _mapper.Map<Show>(show);
+
+            return new ServiceResponse<Show>(mappedShow);
         }
 
-        public async Task<Show> SaveAsync(Show show)
+        public async Task<ServiceResponse<Show>> SaveAsync(Show show)
         {
             var mappedShow = _mapper.Map<DataAccess.EntityModels.Show>(show);
 
@@ -55,18 +64,16 @@ namespace MP.Core.Services
                 .Include(m => m.MoviesGenres)
                     .ThenInclude(mg => mg.Genre)
                 .SingleOrDefaultAsync(m => m.Id == show.MovieId);
+
             if (movie == null)
-            {
-                throw new System.ArgumentException("There is no movie with Id = " + movie.Id, "movie.Id");
-            }
+                return new ServiceResponse<Show>(new Error(ErrorCodes.MovieNotExists, ErrorMessages.MovieNotExists(show.MovieId)));
 
             var room = await _dataContext.Rooms
                 .Include(r => r.Cinema)
                 .SingleOrDefaultAsync(r => r.Id == show.RoomId);
+
             if (room == null)
-            {
-                throw new System.ArgumentException("There is no room with Id = " + room.Id, "room.Id");
-            }
+                return new ServiceResponse<Show>(new Error(ErrorCodes.RoomNotExists, ErrorMessages.RoomNotExists(show.RoomId)));
 
             mappedShow.Movie = movie;
             mappedShow.Room = room;
@@ -74,10 +81,12 @@ namespace MP.Core.Services
             await _dataContext.Shows.AddAsync(mappedShow);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Show>(mappedShow);
+            var savedShow = _mapper.Map<Show>(mappedShow);
+
+            return new ServiceResponse<Show>(savedShow);
         }
 
-        public async Task<Show> UpdateAsync(Show show)
+        public async Task<ServiceResponse<Show>> UpdateAsync(Show show)
         {
             var result = await _dataContext.Shows
                 .Include(s => s.Movie)
@@ -86,27 +95,24 @@ namespace MP.Core.Services
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(s => s.Id == show.Id);
+
             if (result == null)
-            {
-                throw new System.ArgumentException("There is no show with Id = " + show.Id, "show.Id");
-            }
+                return new ServiceResponse<Show>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(show.Id)));
 
             var movie = await _dataContext.Movies
                 .Include(m => m.MoviesGenres)
                     .ThenInclude(mg => mg.Genre)
                 .SingleOrDefaultAsync(m => m.Id == show.MovieId);
+
             if (movie == null)
-            {
-                throw new System.ArgumentException("There is no movie with Id = " + movie.Id, "movie.Id");
-            }
+                return new ServiceResponse<Show>(new Error(ErrorCodes.MovieNotExists, ErrorMessages.MovieNotExists(show.MovieId)));
 
             var room = await _dataContext.Rooms
                 .Include(r => r.Cinema)
                 .SingleOrDefaultAsync(r => r.Id == show.RoomId);
+
             if (room == null)
-            {
-                throw new System.ArgumentException("There is no room with Id = " + room.Id, "room.Id");
-            }
+                return new ServiceResponse<Show>(new Error(ErrorCodes.RoomNotExists, ErrorMessages.RoomNotExists(show.RoomId)));
 
             result.Movie = movie;
             result.Room = room;
@@ -114,19 +120,73 @@ namespace MP.Core.Services
 
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Show>(result);
+            var updatedShow = _mapper.Map<Show>(result);
+
+            return new ServiceResponse<Show>(updatedShow);
         }
 
-        public async Task<Room> DeleteAsync(int id)
+        public async Task<ServiceResponse<Show>> DeleteAsync(int id)
         {
             var showToDelete = await _dataContext.Shows.SingleOrDefaultAsync(s => s.Id == id);
 
-            if (showToDelete == null) return null;
+            if (showToDelete == null)
+                return new ServiceResponse<Show>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(id)));
 
             _dataContext.Remove(showToDelete);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Room>(showToDelete);
+            var deletedShow = _mapper.Map<Show>(showToDelete);
+
+            return new ServiceResponse<Show>(deletedShow);
+        }
+
+        public async Task<ServiceResponse<List<Show>>> GetShowsListingsAsync()
+        {
+            var nextThursday = GetNextDayOfWeek((int)DayOfWeek.Thursday);
+            var today = DateTime.Now;
+
+            var shows = await _dataContext.Shows
+                .Include(s => s.Movie)
+                    .ThenInclude(m => m.MoviesGenres)
+                    .ThenInclude(mg => mg.Genre)
+                .Include(s => s.Room)
+                    .ThenInclude(r => r.Cinema)
+                .Where(s => s.DateTime >= today && s.DateTime <= nextThursday)
+                .ToListAsync();
+
+            var mappesShowsList = _mapper.Map<List<Show>>(shows);
+
+            return new ServiceResponse<List<Show>>(mappesShowsList);
+        }
+
+        public async Task<ServiceResponse<List<Show>>> GetShowsListingsAsync(int cinemaId)
+        {
+            var nextThursday = GetNextDayOfWeek((int)DayOfWeek.Thursday);
+            var today = DateTime.Now;
+
+            var shows = await _dataContext.Shows
+                .Include(s => s.Movie)
+                    .ThenInclude(m => m.MoviesGenres)
+                    .ThenInclude(mg => mg.Genre)
+                .Include(s => s.Room)
+                    .ThenInclude(r => r.Cinema)
+                .Where(s => s.DateTime >= today && s.DateTime <= nextThursday && s.Room.CinemaId == cinemaId)
+                .ToListAsync();
+
+            var mappesShowsList = _mapper.Map<List<Show>>(shows);
+
+            return new ServiceResponse<List<Show>>(mappesShowsList);
+        }
+
+        private DateTime GetNextDayOfWeek(int dayOfWeek)
+        {
+            var today = DateTime.Now;
+
+            var daysUntilDayOfWeek = (dayOfWeek - (int)today.DayOfWeek) % 7;
+
+            var nextDayOfWeek = today.AddDays(daysUntilDayOfWeek);
+
+            return nextDayOfWeek;
         }
     }
 }

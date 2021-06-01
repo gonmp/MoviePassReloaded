@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Purchases
 {
-    public class PurchaseUpsertDTO
+    public class PurchaseUpsertDto
     {
         public int NumberOfTickets { get; set; }
         public int ShowId { get; set; }

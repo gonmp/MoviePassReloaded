@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Tickets
 {
-    public class TicketUpsertDTO
+    public class TicketUpsertDto
     {
         public string Qr { get; set; }
         public int ShowId { get; set; }

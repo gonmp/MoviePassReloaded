@@ -1,4 +1,5 @@
 ﻿using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,10 +9,10 @@ namespace MP.Core.Services
 {
     public interface IProfilesService
     {
-        Task<Profile> DeleteAsync(int id);
-        Task<List<Profile>> GetAllAsync();
-        Task<Profile> GetAsync(int userId);
-        Task<Profile> SaveAsync(int userId, Profile profile);
-        Task<Profile> UpdateAsync(Profile profile);
+        Task<ServiceResponse<List<Profile>>> GetAllAsync();
+        Task<ServiceResponse<Profile>> GetAsync(int userId);
+        Task<ServiceResponse<Profile>> SaveAsync(int userId, Profile profile);
+        Task<ServiceResponse<Profile>> UpdateAsync(Profile profile);
+        Task<ServiceResponse<Profile>> DeleteAsync(int id);
     }
 }

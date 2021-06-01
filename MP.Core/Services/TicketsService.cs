@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MP.Core.Interfaces;
 using MP.Core.Models;
+using MP.Core.Response;
 using MP.DataAccess;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace MP.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<List<Ticket>> GetAllAsync()
+        public async Task<ServiceResponse<List<Ticket>>> GetAllAsync()
         {
             var tickets = await _dataContext.Tickets
                 .Include(t => t.Show)
@@ -35,10 +36,12 @@ namespace MP.Core.Services
                     .ThenInclude(p => p.User)
                 .ToListAsync();
 
-            return _mapper.Map<List<Ticket>>(tickets);
+            var mappedTicketsList = _mapper.Map<List<Ticket>>(tickets);
+
+            return new ServiceResponse<List<Ticket>>(mappedTicketsList);
         }
 
-        public async Task<Ticket> GetAsync(int id)
+        public async Task<ServiceResponse<Ticket>> GetAsync(int id)
         {
             var ticket = await _dataContext.Tickets
                 .Include(t => t.Show)
@@ -52,10 +55,12 @@ namespace MP.Core.Services
                     .ThenInclude(p => p.User)
                 .SingleOrDefaultAsync(t => t.Id == id);
 
-            return _mapper.Map<Ticket>(ticket);
+            var mappedTicket = _mapper.Map<Ticket>(ticket);
+
+            return new ServiceResponse<Ticket>(mappedTicket);
         }
 
-        public async Task<Ticket> SaveAsync(Ticket ticket)
+        public async Task<ServiceResponse<Ticket>> SaveAsync(Ticket ticket)
         {
             var mappedTicket = _mapper.Map<DataAccess.EntityModels.Ticket>(ticket);
 
@@ -66,18 +71,16 @@ namespace MP.Core.Services
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(t => t.Id == ticket.ShowId);
+
             if (show == null)
-            {
-                throw new System.ArgumentException("There is no show with Id = " + show.Id, "show.Id");
-            }
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(ticket.ShowId)));
 
             var purchase = await _dataContext.Purchases
                 .Include(p => p.User)
                 .SingleOrDefaultAsync(p => p.Id == ticket.PurchaseId);
+
             if (purchase == null)
-            {
-                throw new System.ArgumentException("There is no purchase with Id = " + purchase.Id, "purchase.Id");
-            }
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.PurchaseNotExists, ErrorMessages.PurchaseNotExists(ticket.PurchaseId)));
 
             mappedTicket.Purchase = purchase;
             mappedTicket.Show = show;
@@ -85,10 +88,12 @@ namespace MP.Core.Services
             await _dataContext.Tickets.AddAsync(mappedTicket);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Ticket>(mappedTicket);
+            var savedTicket = _mapper.Map<Ticket>(mappedTicket);
+
+            return new ServiceResponse<Ticket>(savedTicket);
         }
 
-        public async Task<Ticket> UpdateAsync(Ticket ticket)
+        public async Task<ServiceResponse<Ticket>> UpdateAsync(Ticket ticket)
         {
             var result = await _dataContext.Tickets
                 .Include(t => t.Show)
@@ -101,10 +106,9 @@ namespace MP.Core.Services
                 .Include(t => t.Purchase)
                     .ThenInclude(p => p.User)
                 .SingleOrDefaultAsync(t => t.Id == ticket.Id);
+
             if (result == null)
-            {
-                throw new System.ArgumentException("There is no ticket with Id = " + ticket.Id, "ticket.Id");
-            }
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.TicketNotExists, ErrorMessages.TicketNotExists(ticket.Id)));
 
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
@@ -113,37 +117,40 @@ namespace MP.Core.Services
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(t => t.Id == ticket.ShowId);
+
             if (show == null)
-            {
-                throw new System.ArgumentException("There is no show with Id = " + show.Id, "show.Id");
-            }
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(ticket.ShowId)));
 
             var purchase = await _dataContext.Purchases
                 .Include(p => p.User)
                 .SingleOrDefaultAsync(p => p.Id == ticket.PurchaseId);
+
             if (purchase == null)
-            {
-                throw new System.ArgumentException("There is no purchase with Id = " + purchase.Id, "purchase.Id");
-            }
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.PurchaseNotExists, ErrorMessages.PurchaseNotExists(ticket.PurchaseId)));
 
             result.Show = show;
             result.Purchase = purchase;
 
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Ticket>(result);
+            var updatedTicket = _mapper.Map<Ticket>(result);
+
+            return new ServiceResponse<Ticket>(updatedTicket);
         }
 
-        public async Task<Ticket> DeleteAsync(int id)
+        public async Task<ServiceResponse<Ticket>> DeleteAsync(int id)
         {
             var ticketToDelete = await _dataContext.Tickets.SingleOrDefaultAsync(t => t.Id == id);
 
-            if (ticketToDelete == null) return null;
+            if (ticketToDelete == null)
+                return new ServiceResponse<Ticket>(new Error(ErrorCodes.TicketNotExists, ErrorMessages.TicketNotExists(id)));
 
             _dataContext.Remove(ticketToDelete);
             await _dataContext.SaveChangesAsync();
 
-            return _mapper.Map<Ticket>(ticketToDelete);
+            var deletedTicket = _mapper.Map<Ticket>(ticketToDelete);
+
+            return new ServiceResponse<Ticket>(deletedTicket);
         }
     }
 }

@@ -31,75 +31,87 @@ namespace MP.Web.Controllers
         {
             var movies = await _moviesService.GetAllFromApiAsync();
 
-            var moviesDto = _mapper.Map<List<MovieDTO>>(movies);
+            var moviesDto = _mapper.Map<List<MovieDto>>(movies);
 
             return Ok(moviesDto);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllAync()
+        [HttpGet("search")]
+        public async Task<IActionResult> GetAync(string movieTitle, int pageSize, int pageNumber)
         {
-            var movies = await _moviesService.GetAllAsync();
-            
-            var moviesDto = _mapper.Map<List<MovieDTO>>(movies);
+            var moviesResponse = await _moviesService.GetAsync(movieTitle, pageSize, pageNumber);
+
+            var movies = moviesResponse.Content;
+
+            var moviesDto = _mapper.Map<List<MovieDto>>(movies);
 
             return Ok(moviesDto);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> GetAsync(int id)
         {
-            var movie = await _moviesService.GetAsync(id);
+            var movieResponse = await _moviesService.GetAsync(id);
 
-            if (movie == null)
-            {
-                return NotFound();
-            }
+            if (!movieResponse.Success)
+                return NotFound(movieResponse.Error);
 
-            return Ok(_mapper.Map<MovieDTO>(movie));
+            var movie = movieResponse.Content;
+
+            var mappedMovie = _mapper.Map<MovieDto>(movie);
+
+            return Ok(mappedMovie);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(MovieDTO movieDto)
+        public async Task<IActionResult> SaveAsync(MovieDto movieDto)
         {
-            var movie = await _moviesService.SaveAsync(_mapper.Map<Movie>(movieDto));
+            var movieResponse = await _moviesService.SaveAsync(_mapper.Map<Movie>(movieDto));
 
-            return Ok(_mapper.Map<MovieDTO>(movie));
+            if (!movieResponse.Success)
+                return NotFound(movieResponse.Error);
+
+            var movie = movieResponse.Content;
+
+            var mappedMovie = _mapper.Map<MovieDto>(movie);
+
+            return Ok(mappedMovie);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(MovieUpsertDTO movieDto, int id)
+        public async Task<IActionResult> UpdateAsync(MovieUpsertDto movieDto, int id)
         {
-            var movie = await _moviesService.GetAsync(id);
+            var movie = _mapper.Map<Movie>(movieDto);
+            movie.Id = id;
 
-            if(movie == null)
-            {
-                return NotFound();
-            }
+            var movieResponse = await _moviesService.UpdateAsync(movie);
 
-            _mapper.Map(movieDto, movie);
+            if (!movieResponse.Success)
+                return NotFound(movieResponse.Error);
 
-            var updatedMovie = _mapper.Map<MovieDTO>(await _moviesService.UpdateAsync(movie));
+            var updatedMovie = movieResponse.Content;
 
-            return Ok(updatedMovie);
+            var updatedMovieDto = _mapper.Map<MovieDto>(updatedMovie);
+
+            return Ok(updatedMovieDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var movie = await _moviesService.GetAsync(id);
+            var movieResponse = await _moviesService.DeleteAsync(id);
 
-            if (movie == null)
-            {
-                return NotFound();
-            }
+            if (!movieResponse.Success)
+                return NotFound(movieResponse.Error);
 
-            var deletedMovie = _moviesService.DeleteAsync(id);
+            var deletedMovie = movieResponse.Content;
 
-            return Ok(_mapper.Map<MovieDTO>(deletedMovie));
+            var deletedMovieDto = _mapper.Map<MovieDto>(deletedMovie);
+
+            return Ok(deletedMovieDto);
         }
     }
 }

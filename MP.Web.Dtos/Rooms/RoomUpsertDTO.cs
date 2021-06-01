@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Rooms
 {
-    public class RoomUpsertDTO
+    public class RoomUpsertDto
     {
         public string Name { get; set; }
         public int Capacity { get; set; }

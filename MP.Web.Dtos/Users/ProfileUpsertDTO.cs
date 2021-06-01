@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Users
 {
-    public class ProfileUpsertDTO
+    public class ProfileUpsertDto
     {
         public string Name { get; set; }
         public string LastName { get; set; }

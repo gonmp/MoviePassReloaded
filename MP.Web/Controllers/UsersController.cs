@@ -27,45 +27,51 @@ namespace MP.Web.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(UserUpsertDTO userDto)
+        public async Task<IActionResult> Login(UserUpsertDto userDto)
         {
-            var token = await _usersService.Login(_mapper.Map<User>(userDto));
+            var user = _mapper.Map<User>(userDto);
 
-            if(token == null)
-            {
-                return BadRequest();
-            }
+            var tokenResponse = await _usersService.Login(user);
+
+            if (!tokenResponse.Success)
+                return BadRequest(tokenResponse.Error);
+
+            var token = tokenResponse.Content;
 
             return Ok(token);
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp(UserUpsertDTO userDto)
+        public async Task<IActionResult> SignUp(UserUpsertDto userDto)
         {
-            var newUser = await _usersService.SignUp(_mapper.Map<User>(userDto));
+            var user = _mapper.Map<User>(userDto);
 
-            if(newUser == null)
-            {
-                return BadRequest();
-            }
+            var newUserResponse = await _usersService.SignUp(user);
 
-            var newUserDto = _mapper.Map<UserDTO>(newUser);
+            if (!newUserResponse.Success)
+                return BadRequest(newUserResponse.Error);
+
+            var newUser = newUserResponse.Content;
+
+            var newUserDto = _mapper.Map<UserDto>(newUser);
 
             return Ok(newUserDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize]
         [HttpGet("current_user")]
         public async Task<IActionResult> Get()
         {
-            var user = await _usersService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
+            var userResponse = await _usersService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+            if (!userResponse.Success)
+                return NotFound(userResponse.Error);
 
-            return Ok(_mapper.Map<UserDTO>(user));
+            var user = userResponse.Content;
+
+            var userDto = _mapper.Map<UserDto>(user);
+
+            return Ok(userDto);
         }
     }
 }

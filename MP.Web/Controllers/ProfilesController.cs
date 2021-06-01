@@ -28,50 +28,64 @@ namespace MP.Web.Controllers
             _userService = userService;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> AdminGet(int id)
         {
-            var profile = await _profilesService.GetAsync(id);
+            var profileResponse = await _profilesService.GetAsync(id);
 
-            if (profile == null)
-            {
-                return NotFound();
-            }
+            if (!profileResponse.Success)
+                return NotFound(profileResponse.Error);
 
-            return Ok(_mapper.Map<ProfileDTO>(profile));
+            var profile = profileResponse.Content;
+
+            var profileDto = _mapper.Map<ProfileDto>(profile);
+
+            return Ok(profileDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize]
         [HttpGet("current_user")]
         public async Task<IActionResult> Get()
         {
-            var profile = await _profilesService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
+            var profileResponse = await _profilesService.GetAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value));
 
-            if (profile == null)
-            {
-                return NotFound();
-            }
+            if (!profileResponse.Success)
+                return NotFound(profileResponse.Error);
 
-            return Ok(_mapper.Map<ProfileDTO>(profile));
+            var profile = profileResponse.Content;
+
+            var profileDto = _mapper.Map<ProfileDto>(profile);
+
+            return Ok(profileDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var profiles = await _profilesService.GetAllAsync();
+            var profilesResponse = await _profilesService.GetAllAsync();
 
-            return Ok(_mapper.Map<List<ProfileDTO>>(profiles));
+            var profiles = profilesResponse.Content;
+
+            var profilesDto = _mapper.Map<List<ProfileDto>>(profiles);
+
+            return Ok(profilesDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize]
         [HttpPost("current_user")]
-        public async Task<IActionResult> SaveAsync(ProfileUpsertDTO profileDto)
+        public async Task<IActionResult> SaveAsync(ProfileUpsertDto profileDto)
         {
-            var profile = await _profilesService.SaveAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), _mapper.Map<Profile>(profileDto));
+            var profile = _mapper.Map<Profile>(profileDto);
 
-            return Ok(_mapper.Map<ProfileDTO>(profile));
+            var profileResponse = await _profilesService.SaveAsync(Int32.Parse(User.FindFirst(ClaimTypes.Name)?.Value), profile);
+
+            var savedProfile = profileResponse.Content;
+
+            var savedProfileDto = _mapper.Map<ProfileDto>(savedProfile);
+
+            return Ok(savedProfileDto);
         }
     }
 }

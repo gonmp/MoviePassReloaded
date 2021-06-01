@@ -25,13 +25,15 @@ namespace MP.Web.Controllers
             _genresService = genresService;
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("~/api/themoviesdb/genres")]
         public async Task<IActionResult> GetAllFromApiAsync()
         {
-            var genres = await _genresService.GetAllFromApiAsync();
+            var genresResponse = await _genresService.GetAllFromApiAsync();
 
-            var genresDto = _mapper.Map<List<GenreDTO>>(genres);
+            var genres = genresResponse.Content;
+
+            var genresDto = _mapper.Map<List<GenreDto>>(genres);
 
             return Ok(genresDto);
         }
@@ -39,9 +41,11 @@ namespace MP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAync()
         {
-            var genres = await _genresService.GetAllAsync();
+            var genresResponse = await _genresService.GetAllAsync();
 
-            var genresDto = _mapper.Map<List<GenreDTO>>(genres);
+            var genres = genresResponse.Content;
+
+            var genresDto = _mapper.Map<List<GenreDto>>(genres);
 
             return Ok(genresDto);
         }
@@ -49,57 +53,66 @@ namespace MP.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var genre = await _genresService.GetAsync(id);
+            var genreResponse = await _genresService.GetAsync(id);
 
-            if (genre == null)
-            {
-                return NotFound();
-            }
+            if (!genreResponse.Success)
+                return NotFound(genreResponse.Error);
 
-            return Ok(_mapper.Map<GenreDTO>(genre));
+            var genre = genreResponse.Content;
+
+            var mappedGenre = _mapper.Map<GenreDto>(genre);
+
+            return Ok(mappedGenre);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(GenreDTO genreDto)
+        public async Task<IActionResult> SaveAsync(GenreDto genreDto)
         {
-            var genre = await _genresService.SaveAsync(_mapper.Map<Genre>(genreDto));
+            var genre = _mapper.Map<Genre>(genreDto);
 
-            return Ok(_mapper.Map<GenreDTO>(genre));
+            var genreResponse = await _genresService.SaveAsync(genre);
+
+            var savedGenre = genreResponse.Content;
+
+            var savedGenreMapped = _mapper.Map<GenreDto>(savedGenre);
+
+            return Ok(savedGenreMapped);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(GenreUpsertDTO genreDto, int id)
+        public async Task<IActionResult> UpdateAsync(GenreUpsertDto genreDto, int id)
         {
-            var genre = await _genresService.GetAsync(id);
+            var genre = _mapper.Map<Genre>(genreDto);
+            genre.Id = id;
 
-            if (genre == null)
-            {
-                return NotFound();
-            }
+            var genreResponse = await _genresService.UpdateAsync(genre);
 
-            _mapper.Map(genreDto, genre);
+            if (!genreResponse.Success)
+                return NotFound(genreResponse.Error);
 
-            var updatedGenre = _mapper.Map<GenreDTO>(await _genresService.UpdateAsync(genre));
+            var updatedGenre = genreResponse.Content;
 
-            return Ok(updatedGenre);
+            var updatedGenreMapped = _mapper.Map<GenreDto>(updatedGenre);
+
+            return Ok(updatedGenreMapped);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var genre = await _genresService.GetAsync(id);
+            var genreResponse = await _genresService.DeleteAsync(id);
 
-            if (genre == null)
-            {
-                return NotFound();
-            }
+            if (!genreResponse.Success)
+                return NotFound(genreResponse.Error);
 
-            var deletedGenre = _genresService.DeleteAsync(id);
+            var deletedGenre = genreResponse.Content;
 
-            return Ok(_mapper.Map<GenreDTO>(deletedGenre));
+            var deletedGenreMapped = _mapper.Map<GenreDto>(deletedGenre);
+
+            return Ok(deletedGenreMapped);
         }
     }
 }

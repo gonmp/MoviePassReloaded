@@ -15,6 +15,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.10" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="3.1.9" />
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="4.2.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
   </ItemGroup>
 
@@ -26,9 +30,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\views\pages\Landing\index.tsx" />
+    <None Remove="ClientApp\src\views\pages\Landing\Landing.tsx" />
+    <None Remove="ClientApp\src\views\shared\ProtectedRoute\PrivateRoute.tsx" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MP.Core\MP.Core.csproj" />
     <ProjectReference Include="..\MP.DataAccess\MP.DataAccess.csproj" />
     <ProjectReference Include="..\MP.Web.Dtos\MP.Web.Dtos.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Authorization\" />
+    <Folder Include="ClientApp\src\models\" />
+    <Folder Include="ClientApp\src\utils\" />
+    <Folder Include="ClientApp\src\services\" />
+    <Folder Include="ClientApp\src\views\shared\Navbar\" />
+    <Folder Include="ClientApp\src\views\shared\Card\" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
@@ -56,5 +75,21 @@
       </ResolvedFileToPublish>
     </ItemGroup>
   </Target>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TypeScriptTarget>ES5</TypeScriptTarget>
+    <TypeScriptJSXEmit>React</TypeScriptJSXEmit>
+    <TypeScriptModuleKind />
+    <TypeScriptCompileOnSaveEnabled>False</TypeScriptCompileOnSaveEnabled>
+    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
+    <TypeScriptRemoveComments>False</TypeScriptRemoveComments>
+    <TypeScriptOutFile />
+    <TypeScriptOutDir />
+    <TypeScriptGeneratesDeclarations>False</TypeScriptGeneratesDeclarations>
+    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
+    <TypeScriptSourceMap>True</TypeScriptSourceMap>
+    <TypeScriptMapRoot />
+    <TypeScriptSourceRoot />
+  </PropertyGroup>
 
 </Project>

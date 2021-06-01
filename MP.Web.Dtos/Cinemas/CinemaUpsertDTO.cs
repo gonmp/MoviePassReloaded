@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Cinemas
 {
-    public class CinemaUpsertDTO
+    public class CinemaUpsertDto
     {
         public string Name { get; set; }
         public string Address { get; set; }

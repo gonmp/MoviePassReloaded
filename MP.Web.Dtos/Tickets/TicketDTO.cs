@@ -6,12 +6,12 @@ using System.Text;
 
 namespace MP.Web.Dtos.Tickets
 {
-    public class TicketDTO
+    public class TicketDto
     {
         public int Id { get; set; }
         public Guid Code { get; set; }
         public string Qr { get; set; }
-        public ShowDTO Show { get; set; }
-        public PurchaseDTO Purchase { get; set; }
+        public ShowDto Show { get; set; }
+        public PurchaseDto Purchase { get; set; }
     }
 }

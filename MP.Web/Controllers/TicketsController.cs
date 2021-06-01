@@ -28,9 +28,11 @@ namespace MP.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var tickets = await _ticketsService.GetAllAsync();
+            var ticketsResponse = await _ticketsService.GetAllAsync();
 
-            var ticketsDto = _mapper.Map<List<TicketDTO>>(tickets);
+            var tickets = ticketsResponse.Content;
+
+            var ticketsDto = _mapper.Map<List<TicketDto>>(tickets);
 
             return Ok(ticketsDto);
         }
@@ -38,57 +40,69 @@ namespace MP.Web.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(int id)
         {
-            var ticket = await _ticketsService.GetAsync(id);
+            var ticketResponse = await _ticketsService.GetAsync(id);
 
-            if (ticket == null)
-            {
-                return NotFound();
-            }
+            if (!ticketResponse.Success)
+                return NotFound(ticketResponse.Error);
 
-            return Ok(_mapper.Map<TicketDTO>(ticket));
+            var ticket = ticketResponse.Content;
+
+            var ticketDto = _mapper.Map<TicketDto>(ticket);
+
+            return Ok(ticketDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> SaveAsync(TicketUpsertDTO ticketDto)
+        public async Task<IActionResult> SaveAsync(TicketUpsertDto ticketDto)
         {
-            var ticket = await _ticketsService.SaveAsync(_mapper.Map<Ticket>(ticketDto));
+            var ticket = _mapper.Map<Ticket>(ticketDto);
 
-            return Ok(_mapper.Map<TicketDTO>(ticket));
+            var ticketResponse = await _ticketsService.SaveAsync(ticket);
+
+            if (!ticketResponse.Success)
+                return NotFound(ticketResponse.Error);
+
+            var savedTicket = ticketResponse.Content;
+
+            var savedTicketDto = _mapper.Map<TicketDto>(savedTicket);
+
+            return Ok(savedTicketDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(TicketUpsertDTO ticketDto, int id)
+        public async Task<IActionResult> UpdateAsync(TicketUpsertDto ticketDto, int id)
         {
-            var ticket = await _ticketsService.GetAsync(id);
+            var ticket = _mapper.Map<Ticket>(ticketDto);
+            ticket.Id = id;
 
-            if (ticket == null)
-            {
-                return NotFound();
-            }
+            var ticketResponse = await _ticketsService.UpdateAsync(ticket);
 
-            _mapper.Map(ticketDto, ticket);
+            if (!ticketResponse.Success)
+                return NotFound(ticketResponse.Error);
 
-            var updatedTicket = _mapper.Map<TicketDTO>(await _ticketsService.UpdateAsync(ticket));
+            var updatedTicket = ticketResponse.Content;
 
-            return Ok(updatedTicket);
+            var updatedTicketDto = _mapper.Map<TicketDto>(updatedTicket);
+
+            return Ok(updatedTicketDto);
         }
 
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var ticket = await _ticketsService.GetAsync(id);
+            var ticketResponse = await _ticketsService.DeleteAsync(id);
 
-            if (ticket == null)
-            {
-                return NotFound();
-            }
+            if (!ticketResponse.Success)
+                return NotFound(ticketResponse.Error);
 
-            var deletedTicket = _ticketsService.DeleteAsync(id);
+            var deletedTicket = ticketResponse.Content;
 
-            return Ok(_mapper.Map<TicketDTO>(deletedTicket));
+            var deletedTicketDto = _mapper.Map<TicketDto>(deletedTicket);
+
+            return Ok(deletedTicketDto);
         }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Movies
 {
-    public class MovieDTO
+    public class MovieDto
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -12,6 +12,6 @@ namespace MP.Web.Dtos.Movies
         public string Image { get; set; }
         public string Overview { get; set; }
         public int Duration { get; set; }
-        public List<MoviesGenresDTO> Genres { get; set; }
+        public List<MoviesGenresDto> Genres { get; set; }
     }
 }

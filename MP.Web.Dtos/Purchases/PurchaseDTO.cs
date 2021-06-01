@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Purchases
 {
-    public class PurchaseDTO
+    public class PurchaseDto
     {
         public int Id { get; set; }
         public decimal TotalNoDiscount { get; set; }
@@ -14,7 +14,7 @@ namespace MP.Web.Dtos.Purchases
         public decimal Discount { get; set; }
         public DateTime PurchaseDate { get; set; }
         public int NumberOfTickets { get; set; }
-        public UserDTO User { get; set; }
-        public List<TicketDTO> Tickets { get; set; }
+        public UserDto User { get; set; }
+        public List<TicketDto> Tickets { get; set; }
     }
 }

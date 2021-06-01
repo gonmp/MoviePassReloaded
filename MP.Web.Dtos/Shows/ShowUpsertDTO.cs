@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MP.Web.Dtos.Shows
 {
-    public class ShowUpsertDTO
+    public class ShowUpsertDto
     {
         public DateTime DateTime { get; set; }
         public int MovieId { get; set; }

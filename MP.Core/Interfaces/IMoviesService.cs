@@ -1,4 +1,6 @@
-﻿using MP.Core.Models;
+﻿using MP.Core.Helpers;
+using MP.Core.Models;
+using MP.Core.Response;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,10 +11,10 @@ namespace MP.Core.Services
     public interface IMoviesService
     {
         Task<List<Movie>> GetAllFromApiAsync();
-        Task<List<Movie>> GetAllAsync();
-        Task<Movie> GetAsync(int id);
-        Task<Movie> SaveAsync(Movie movie);
-        Task<Movie> UpdateAsync(Movie movie);
-        Task<Movie> DeleteAsync(int id);
+        Task<ServiceResponse<PagedList<Movie>>> GetAsync(string movieTitle, int pageSize, int pageNumber);
+        Task<ServiceResponse<Movie>> GetAsync(int id);
+        Task<ServiceResponse<Movie>> SaveAsync(Movie movie);
+        Task<ServiceResponse<Movie>> UpdateAsync(Movie movie);
+        Task<ServiceResponse<Movie>> DeleteAsync(int id);
     }
 }
