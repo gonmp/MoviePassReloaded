@@ -105,7 +105,7 @@ namespace MP.Web.Controllers
             return Ok(deletedShowDto);
         }
 
-        [HttpGet]
+        [HttpGet("now-playing")]
         public async Task<IActionResult> GetShowsListingsAsync()
         {
             var showsResponse = await _showsService.GetShowsListingsAsync();
