@@ -1,12 +1,10 @@
-﻿import { AppBar, Toolbar } from '@material-ui/core';
-import * as React from 'React';
+﻿import * as React from 'react';
+import Navbar from '../../shared/Navbar';
 
-const Navbar = () => {
-
+const Landing = () => {
     return (
-        <AppBar position="static">
-            <Toolbar>
-            </Toolbar>
-        </AppBar>
+        <Navbar />
         );
 }
+
+export default Landing;

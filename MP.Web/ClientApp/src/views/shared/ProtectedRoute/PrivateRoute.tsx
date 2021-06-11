@@ -1,4 +1,4 @@
-﻿import * as React from 'React';
+﻿import * as React from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 
 export interface IPrivateRouteProps {
