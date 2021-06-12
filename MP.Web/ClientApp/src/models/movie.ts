@@ -1,9 +1,12 @@
-﻿enum MovieFields {
+﻿import IGenre from './genre';
+
+enum MovieFields {
     TITLE = "title",
     LANGUAGE = "language",
     IMAGE = "image",
     OVERVIEW = "overview",
-    DURATION = "duration"
+    DURATION = "duration",
+    GENRES = "genres"
 }
 
 export default interface IMovie {
@@ -12,5 +15,6 @@ export default interface IMovie {
     [MovieFields.LANGUAGE]: string,
     [MovieFields.IMAGE]: string,
     [MovieFields.OVERVIEW]: string,
-    [MovieFields.DURATION]: number
+    [MovieFields.DURATION]: number,
+    [MovieFields.GENRES]: IGenre[]
 }

@@ -31,8 +31,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\constants\theMovieDbUrls.ts" />
+    <None Remove="ClientApp\src\models\cinema.ts" />
+    <None Remove="ClientApp\src\models\genre.ts" />
+    <None Remove="ClientApp\src\models\movie.ts" />
+    <None Remove="ClientApp\src\models\purchase.ts" />
+    <None Remove="ClientApp\src\models\room.ts" />
+    <None Remove="ClientApp\src\models\show.ts" />
+    <None Remove="ClientApp\src\models\ticket.ts" />
+    <None Remove="ClientApp\src\services\ShowService.ts" />
     <None Remove="ClientApp\src\views\pages\Landing\index.tsx" />
     <None Remove="ClientApp\src\views\pages\Landing\Landing.tsx" />
+    <None Remove="ClientApp\src\views\shared\MovieCard\index.tsx" />
+    <None Remove="ClientApp\src\views\shared\MovieCard\MovieCard.tsx" />
+    <None Remove="ClientApp\src\views\shared\MovieListings\index.tsx" />
+    <None Remove="ClientApp\src\views\shared\MovieListings\MovieListings.tsx" />
     <None Remove="ClientApp\src\views\shared\Navbar\index.tsx" />
     <None Remove="ClientApp\src\views\shared\Navbar\Navbar.tsx" />
     <None Remove="ClientApp\src\views\shared\ProtectedRoute\PrivateRoute.tsx" />
@@ -46,10 +59,7 @@
 
   <ItemGroup>
     <Folder Include="Authorization\" />
-    <Folder Include="ClientApp\src\models\" />
     <Folder Include="ClientApp\src\utils\" />
-    <Folder Include="ClientApp\src\services\" />
-    <Folder Include="ClientApp\src\views\shared\Card\" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
