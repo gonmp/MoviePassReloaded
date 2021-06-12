@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using MP.Core.Helpers;
 using MP.Core.Interfaces;
 using MP.Core.Models;
 using MP.Core.Response;
@@ -137,7 +138,7 @@ namespace MP.Core.Services
 
         public async Task<ServiceResponse<List<Show>>> GetShowsListingsAsync()
         {
-            var nextThursday = GetNextDayOfWeek((int)DayOfWeek.Thursday);
+            var nextThursday = Dates.GetNextDayOfWeek((int)DayOfWeek.Thursday);
             var today = DateTime.Now;
 
             var shows = await _dataContext.Shows
@@ -155,7 +156,7 @@ namespace MP.Core.Services
 
         public async Task<ServiceResponse<List<Show>>> GetShowsListingsAsync(int cinemaId)
         {
-            var nextThursday = GetNextDayOfWeek((int)DayOfWeek.Thursday);
+            var nextThursday = Dates.GetNextDayOfWeek((int)DayOfWeek.Thursday);
             var today = DateTime.Now;
 
             var shows = await _dataContext.Shows
@@ -169,22 +170,6 @@ namespace MP.Core.Services
             var mappesShowsList = _mapper.Map<List<Show>>(shows);
 
             return new ServiceResponse<List<Show>>(mappesShowsList);
-        }
-
-        private DateTime GetNextDayOfWeek(int dayOfWeek)
-        {
-            var today = DateTime.Now;
-
-            var daysUntilDayOfWeek = (dayOfWeek - (int)today.DayOfWeek);
-
-            if (daysUntilDayOfWeek < 0)
-            {
-                daysUntilDayOfWeek = daysUntilDayOfWeek + 7;
-            }
-
-            var nextDayOfWeek = today.AddDays(daysUntilDayOfWeek);
-
-            return nextDayOfWeek;
         }
     }
 }

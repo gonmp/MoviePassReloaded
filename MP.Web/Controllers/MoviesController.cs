@@ -113,5 +113,17 @@ namespace MP.Web.Controllers
 
             return Ok(deletedMovieDto);
         }
+
+        [HttpGet("now-playing")]
+        public async Task<IActionResult> GetMovieListingsAsync()
+        {
+            var moviesResponse = await _moviesService.GetMovieListingsAsync();
+
+            var movies = moviesResponse.Content;
+
+            var moviesDto = _mapper.Map<List<MovieDto>>(movies);
+
+            return Ok(moviesDto);
+        }
     }
 }
