@@ -26,7 +26,24 @@ namespace MP.DataAccess
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<MoviesGenres>().HasKey(sc => new { sc.MovieId, sc.GenreId });
+            builder
+                .Entity<Movie>()
+                .HasMany(m => m.Genres)
+                .WithMany(g => g.Movies)
+                .UsingEntity<MoviesGenres>(
+                    j => j
+                        .HasOne(mg => mg.Genre)
+                        .WithMany(g => g.MoviesGenres)
+                        .HasForeignKey(mg => mg.GenreId),
+                    j => j
+                        .HasOne(mg => mg.Movie)
+                        .WithMany(m => m.MoviesGenres)
+                        .HasForeignKey(mg => mg.MovieId),
+                    j =>
+                        {
+                            j.HasKey(t => new { t.MovieId, t.GenreId });
+                        }
+                );
             builder.Entity<Cinema>().HasMany<Room>(c => c.Rooms).WithOne(r => r.Cinema).HasForeignKey(r => r.CinemaId);
             builder.Entity<Room>().HasOne<Cinema>(r => r.Cinema).WithMany(c => c.Rooms).HasForeignKey(r => r.CinemaId);
             builder.Entity<Show>().HasOne<Movie>(s => s.Movie).WithMany(m => m.Shows).HasForeignKey(s => s.MovieId);

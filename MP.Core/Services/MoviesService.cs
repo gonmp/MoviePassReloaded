@@ -47,7 +47,7 @@ namespace MP.Core.Services
 
         public async Task<ServiceResponse<PagedList<Movie>>> GetAsync(string movieTitle, int pageSize, int pageNumber)
         {
-            var moviesList = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).ToListAsync();
+            var moviesList = await _dataContext.Movies.Include(m => m.Genres).ToListAsync();
 
             if (!string.IsNullOrEmpty(movieTitle))
                 moviesList = moviesList.Where(m => m.Title.Contains(movieTitle)).ToList();
@@ -61,7 +61,7 @@ namespace MP.Core.Services
 
         public async Task<ServiceResponse<Movie>> GetAsync(int id)
         {
-            var movie = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _dataContext.Movies.Include(m => m.Genres).FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie == null)
                 return new ServiceResponse<Movie>(new Error(ErrorCodes.MovieNotExists, ErrorMessages.MovieNotExists(id)));
@@ -99,7 +99,7 @@ namespace MP.Core.Services
                     foreach (var genreIdJson in genresIdsJson)
                     {
                         var genreId = (int)genreIdJson;
-                        var genre = await _dataContext.Genres.Include(g => g.MoviesGenres).ThenInclude(mg => mg.Movie).SingleOrDefaultAsync(g => g.Id == genreId);
+                        var genre = await _dataContext.Genres.Include(m => m.Movies).SingleOrDefaultAsync(g => g.Id == genreId);
                         genresList.Add(genre);
                     }
                     var movie = new Movie
@@ -117,15 +117,7 @@ namespace MP.Core.Services
 
                     foreach(var genre in genresList)
                     {
-                        var moviesGenres = new DataAccess.EntityModels.MoviesGenres
-                        {
-                            MovieId = mappedMovie.Id,
-                            Movie = mappedMovie,
-                            GenreId = genre.Id,
-                            Genre = genre
-                        };
-
-                        mappedMovie.MoviesGenres.Add(moviesGenres);
+                        mappedMovie.Genres.Add(genre);
                     }
 
                     
@@ -151,24 +143,19 @@ namespace MP.Core.Services
         public async Task<ServiceResponse<Movie>> SaveAsync(Movie movie)
         {
             var genresList = new List<DataAccess.EntityModels.Genre>();
-            foreach(var genre in movie.MoviesGenres)
+            foreach(var genre in movie.Genres)
             {
-                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Id);
 
                 if (genreToAdd == null)
-                    return new ServiceResponse<Movie>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(genre.Genre.Id)));
+                    return new ServiceResponse<Movie>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(genre.Id)));
 
                 genresList.Add(genreToAdd);
             }
 
             var mappedMovie = _mapper.Map<DataAccess.EntityModels.Movie>(movie);
 
-            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
-            {
-                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
-            }).ToList();
-
-            mappedMovie.MoviesGenres = mappedMovieGenre;
+            mappedMovie.Genres = genresList;
 
             await _dataContext.Movies.AddAsync(mappedMovie);
 
@@ -181,27 +168,22 @@ namespace MP.Core.Services
 
         public async Task<ServiceResponse<Movie>> UpdateAsync(Movie movie)
         {
-            var result = await _dataContext.Movies.Include(m => m.MoviesGenres).ThenInclude(mg => mg.Genre).SingleOrDefaultAsync(m => m.Id == movie.Id);
+            var result = await _dataContext.Movies.Include(m => m.Genres).SingleOrDefaultAsync(m => m.Id == movie.Id);
 
             if (result == null)
                 return new ServiceResponse<Movie>(new Error(ErrorCodes.MovieNotExists, ErrorMessages.MovieNotExists(movie.Id)));
 
             var genresList = new List<DataAccess.EntityModels.Genre>();
 
-            foreach (var genre in movie.MoviesGenres)
+            foreach (var genre in movie.Genres)
             {
-                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Genre.Id);
+                var genreToAdd = await _dataContext.Genres.SingleOrDefaultAsync(g => g.Id == genre.Id);
 
                 if (genreToAdd == null)
-                    return new ServiceResponse<Movie>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(genre.Genre.Id)));
+                    return new ServiceResponse<Movie>(new Error(ErrorCodes.GenreNotExists, ErrorMessages.GenreNotExists(genre.Id)));
 
                 genresList.Add(genreToAdd);
             }
-
-            var mappedMovieGenre = genresList.Select(g => new DataAccess.EntityModels.MoviesGenres
-            {
-                Genre = _mapper.Map<DataAccess.EntityModels.Genre>(g)
-            }).ToList();
 
             result.Id = movie.Id;
             result.Duration = movie.Duration;
@@ -209,7 +191,7 @@ namespace MP.Core.Services
             result.Language = movie.Language;
             result.Overview = movie.Overview;
             result.Title = movie.Title;
-            result.MoviesGenres = mappedMovieGenre;
+            result.Genres = genresList;
 
             await _dataContext.SaveChangesAsync();
 

@@ -12,6 +12,6 @@ namespace MP.Core.Models
         public string Image { get; set; }
         public string Overview { get; set; }
         public int Duration { get; set; }
-        public IList<MoviesGenres> MoviesGenres { get; set; }
+        public IList<Genre> Genres { get; set; }
     }
 }

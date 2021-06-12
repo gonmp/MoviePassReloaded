@@ -10,6 +10,7 @@ namespace MP.DataAccess.EntityModels
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
-        public ICollection<MoviesGenres> MoviesGenres { get; set; }
+        public IList<MoviesGenres> MoviesGenres { get; set; }
+        public ICollection<Movie> Movies { get; set; }
     }
 }
