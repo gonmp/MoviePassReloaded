@@ -27,8 +27,7 @@ namespace MP.Core.Services
             var tickets = await _dataContext.Tickets
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Room)
                     .ThenInclude(r => r.Cinema)
@@ -46,8 +45,7 @@ namespace MP.Core.Services
             var ticket = await _dataContext.Tickets
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Room)
                     .ThenInclude(r => r.Cinema)
@@ -66,8 +64,7 @@ namespace MP.Core.Services
 
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(t => t.Id == ticket.ShowId);
@@ -98,8 +95,7 @@ namespace MP.Core.Services
             var result = await _dataContext.Tickets
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(t => t.Show)
                     .ThenInclude(s => s.Room)
                     .ThenInclude(r => r.Cinema)
@@ -112,8 +108,7 @@ namespace MP.Core.Services
 
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(t => t.Id == ticket.ShowId);

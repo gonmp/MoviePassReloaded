@@ -14,7 +14,8 @@ namespace MP.DataAccess.EntityModels
         public string Image { get; set; }
         public string Overview { get; set; }
         public int Duration { get; set; }
-        public List<MoviesGenres> MoviesGenres { get; set; }
+        public IList<MoviesGenres> MoviesGenres { get; set; }
+        public List<Genre> Genres { get; set; }
         public List<Show> Shows { get; set; }
     }
 }

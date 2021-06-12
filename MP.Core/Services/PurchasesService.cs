@@ -37,8 +37,7 @@ namespace MP.Core.Services
                 .Include(p => p.Tickets)
                     .ThenInclude(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .ToListAsync();
 
             var mappedPurchasesList = _mapper.Map<List<Purchase>>(purchases);
@@ -62,8 +61,7 @@ namespace MP.Core.Services
                 .Include(p => p.Tickets)
                     .ThenInclude(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Where(p => p.UserId == userId)
                 .ToListAsync();
 
@@ -83,8 +81,7 @@ namespace MP.Core.Services
                 .Include(p => p.Tickets)
                     .ThenInclude(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .SingleOrDefaultAsync(p => p.Id == id);
 
             if (purchase == null)
@@ -106,8 +103,7 @@ namespace MP.Core.Services
 
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(s => s.Id == showId);
@@ -165,8 +161,7 @@ namespace MP.Core.Services
                 .Include(p => p.Tickets)
                     .ThenInclude(t => t.Show)
                     .ThenInclude(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .SingleOrDefaultAsync(p => p.Id == purchase.Id);
 
             if (result == null)
@@ -188,8 +183,7 @@ namespace MP.Core.Services
                         .ThenInclude(r => r.Cinema)
                     .Include(t => t.Show)
                         .ThenInclude(s => s.Movie)
-                        .ThenInclude(m => m.MoviesGenres)
-                        .ThenInclude(mg => mg.Genre)
+                        .ThenInclude(m => m.Genres)
                     .SingleOrDefaultAsync(t => t.Id == ticketId.Id);
 
                 if (ticket == null)

@@ -27,8 +27,7 @@ namespace MP.Core.Services
         {
             var shows = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .ToListAsync();
@@ -42,8 +41,7 @@ namespace MP.Core.Services
         {
             var show = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(s => s.Id == id);
@@ -61,8 +59,7 @@ namespace MP.Core.Services
             var mappedShow = _mapper.Map<DataAccess.EntityModels.Show>(show);
 
             var movie = await _dataContext.Movies
-                .Include(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                .Include(m => m.Genres)
                 .SingleOrDefaultAsync(m => m.Id == show.MovieId);
 
             if (movie == null)
@@ -90,8 +87,7 @@ namespace MP.Core.Services
         {
             var result = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .SingleOrDefaultAsync(s => s.Id == show.Id);
@@ -100,8 +96,7 @@ namespace MP.Core.Services
                 return new ServiceResponse<Show>(new Error(ErrorCodes.ShowNotExists, ErrorMessages.ShowNotExists(show.Id)));
 
             var movie = await _dataContext.Movies
-                .Include(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                .Include(m => m.Genres)
                 .SingleOrDefaultAsync(m => m.Id == show.MovieId);
 
             if (movie == null)
@@ -147,8 +142,7 @@ namespace MP.Core.Services
 
             var shows = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .Where(s => s.DateTime >= today && s.DateTime <= nextThursday)
@@ -166,8 +160,7 @@ namespace MP.Core.Services
 
             var shows = await _dataContext.Shows
                 .Include(s => s.Movie)
-                    .ThenInclude(m => m.MoviesGenres)
-                    .ThenInclude(mg => mg.Genre)
+                    .ThenInclude(m => m.Genres)
                 .Include(s => s.Room)
                     .ThenInclude(r => r.Cinema)
                 .Where(s => s.DateTime >= today && s.DateTime <= nextThursday && s.Room.CinemaId == cinemaId)
@@ -182,7 +175,12 @@ namespace MP.Core.Services
         {
             var today = DateTime.Now;
 
-            var daysUntilDayOfWeek = (dayOfWeek - (int)today.DayOfWeek) % 7;
+            var daysUntilDayOfWeek = (dayOfWeek - (int)today.DayOfWeek);
+
+            if (daysUntilDayOfWeek < 0)
+            {
+                daysUntilDayOfWeek = daysUntilDayOfWeek + 7;
+            }
 
             var nextDayOfWeek = today.AddDays(daysUntilDayOfWeek);
 

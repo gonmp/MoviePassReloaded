@@ -8,6 +8,6 @@ namespace MP.Core.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public IList<MoviesGenres> MoviesGenres { get; set; }
+        public IList<Movie> Movies { get; set; }
     }
 }

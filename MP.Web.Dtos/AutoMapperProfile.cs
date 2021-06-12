@@ -24,7 +24,6 @@ namespace MP.Web.Dtos
             CreateMap<Genre, GenreDto>()
                 .ReverseMap();
             CreateMap<Movie, MovieDto>()
-                .ForMember(dest => dest.Genres, opt => opt.MapFrom(src => src.MoviesGenres))
                 .ReverseMap();
             CreateMap<User, UserDto>();
             CreateMap<UserUpsertDto, User>();
