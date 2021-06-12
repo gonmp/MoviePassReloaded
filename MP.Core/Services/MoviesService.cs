@@ -9,6 +9,7 @@ using MP.Core.Response;
 using MP.DataAccess;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -198,6 +199,25 @@ namespace MP.Core.Services
             var updatedMovie = _mapper.Map<Movie>(result);
 
             return new ServiceResponse<Movie>(updatedMovie);
+        }
+
+        public async Task<ServiceResponse<List<Movie>>> GetMovieListingsAsync()
+        {
+            var nextThursday = Dates.GetNextDayOfWeek((int)DayOfWeek.Thursday);
+            var today = DateTime.Now;
+
+            var movies = await _dataContext.Shows
+                .Include(s => s.Movie)
+                    .ThenInclude(m => m.Genres)
+                .Include(s => s.Room)
+                    .ThenInclude(r => r.Cinema)
+                .Where(s => s.DateTime >= today && s.DateTime <= nextThursday)
+                .Select(s => s.Movie)
+                .ToListAsync();
+
+            var mappedMoviesList = _mapper.Map<List<Movie>>(movies);
+
+            return new ServiceResponse<List<Movie>>(mappedMoviesList);
         }
     }
 }
