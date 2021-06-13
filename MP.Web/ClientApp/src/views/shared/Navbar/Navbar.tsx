@@ -8,8 +8,8 @@ const useStyles = makeStyles({
     },
     navMenuItem: {
         display: "inline-block",
-        marginRight: 6,
-        marginLeft: 6
+        marginRight: 25,
+        marginLeft: 25
     }
 });
 

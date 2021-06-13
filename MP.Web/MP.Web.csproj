@@ -42,6 +42,8 @@
     <None Remove="ClientApp\src\services\ShowService.ts" />
     <None Remove="ClientApp\src\views\pages\Landing\index.tsx" />
     <None Remove="ClientApp\src\views\pages\Landing\Landing.tsx" />
+    <None Remove="ClientApp\src\views\pages\MovieDetails\index.tsx" />
+    <None Remove="ClientApp\src\views\pages\MovieDetails\MovieDetails.tsx" />
     <None Remove="ClientApp\src\views\shared\MovieCard\index.tsx" />
     <None Remove="ClientApp\src\views\shared\MovieCard\MovieCard.tsx" />
     <None Remove="ClientApp\src\views\shared\MovieListings\index.tsx" />
