@@ -219,5 +219,24 @@ namespace MP.Core.Services
 
             return new ServiceResponse<List<Movie>>(mappedMoviesList);
         }
+
+        public async Task<ServiceResponse<List<Cinema>>> GetCinemasPlayingMovie(int movieId)
+        {
+            var movie = _dataContext.Movies.FirstOrDefault(m => m.Id == movieId);
+
+            if(movie == null)
+                return new ServiceResponse<List<Cinema>>(new Error(ErrorCodes.MovieNotExists, ErrorMessages.MovieNotExists(movieId)));
+
+            var cinemas = await _dataContext.Shows
+                                        .Include(s => s.Room)
+                                        .ThenInclude(r => r.Cinema)
+                                        .Where(s => s.MovieId == movieId)
+                                        .Select(s => s.Room.Cinema)
+                                        .ToListAsync();
+
+            var mappedCinemasList = _mapper.Map<List<Cinema>>(cinemas);
+
+            return new ServiceResponse<List<Cinema>>(mappedCinemasList);
+        }
     }
 }
